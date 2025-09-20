@@ -108,6 +108,38 @@ async def search_projects(
 
 	return JSONResponse(content=result.json())
 
+# --- PROJECT DETAILS ENDPOINT ---
+@app.get("/project/{project_id}")
+async def get_project_details(project_id: str):
+    """
+    Fetch detailed information for a specific carbon project by ID
+    """
+    try:
+        # Call the Carbonmark API for project details
+        response = requests.get(f"https://v17.api.carbonmark.com/carbonProjects/{project_id}")
+        response.raise_for_status()
+        
+        # Return the project data directly
+        project_data = response.json()
+        return JSONResponse(content=project_data)
+        
+    except requests.HTTPError as e:
+        if e.response.status_code == 404:
+            return JSONResponse(
+                content={"error": f"Project with ID '{project_id}' not found"}, 
+                status_code=404
+            )
+        else:
+            return JSONResponse(
+                content={"error": f"HTTP error occurred: {e.response.status_code}"}, 
+                status_code=e.response.status_code
+            )
+    except requests.RequestException as e:
+        return JSONResponse(
+            content={"error": "Failed to fetch project details from Carbonmark API"}, 
+            status_code=500
+        )
+
 
 
 if __name__ == "__main__":
