@@ -33,6 +33,19 @@ async def search_countries():
         return JSONResponse(content={"countries": countries})
     except requests.RequestException as e:
         return JSONResponse(content={"error": "Failed to fetch countries"}, status_code=500)
+    
+# --- METHODOLOGIES ENDPOINT ---
+@app.get("/search_categories")
+async def search_categories():
+    try:
+        response = requests.get("https://v17.api.carbonmark.com/categories")
+        response.raise_for_status()
+        data = response.json()
+        # Unpack the JSON to return a list of category names
+        categories = [category["id"] for category in data]
+        return JSONResponse(content={"categories": categories})
+    except requests.RequestException as e:
+        return JSONResponse(content={"error": "Failed to fetch categories"}, status_code=500)
 
 # --- SEARCH ENDPOINT ---
 @app.get("/search")
@@ -41,7 +54,7 @@ async def search_projects(
 	methodology: str = Query(None),
 	name: str = Query(None)
     ):
-	parameters = {}
+	parameters = {"limit": 100}
 	if country: parameters['country'] = country
 	if methodology: parameters['category'] = methodology
 	if name: parameters['name'] = name
@@ -49,8 +62,6 @@ async def search_projects(
 	result = requests.get("https://v17.api.carbonmark.com/carbonProjects", params=parameters)
 
 	return JSONResponse(content=result.json())
-
-
 
 
 
