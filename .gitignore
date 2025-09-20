@@ -5,3 +5,4 @@ venv
 .vscode/
 /node_modules
 __pycache__
+client/nul
