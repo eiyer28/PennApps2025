@@ -1,10 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Hello World</title>
+    <title>Carbon Project Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+        }
+
+        label {
+            display: block;
+            margin-top: 1em;
+        }
+
+        input,
+        select,
+        button {
+            margin-top: 0.5em;
+        }
+
+        #results {
+            margin-top: 2em;
+        }
+
+        /* Loading spinner styles */
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #searchButton {
+            position: relative;
+        }
+
+        #searchButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Hello, world!</h1>
+    <h1>Search Carbon Projects</h1>
+    <form id="searchForm">
+        <label>
+            Country:
+            <select name="country" id="country">
+                <option value="">Loading countries...</option>
+            </select>
+            <div id="countryLoader" class="loader hidden"></div>
+        </label>
+        <label>
+            Methodology:
+            <select name="methodology" id="methodology">
+                <option value="">Select a methodology</option>
+                <option value="REDD+">REDD+</option>
+                <option value="Afforestation">Afforestation</option>
+                <option value="Renewable Energy">Renewable Energy</option>
+                <!-- Add more methodologies as needed -->
+            </select>
+        </label>
+        <label>
+            Project Name:
+            <input type="text" name="name" id="name" placeholder="Enter project name">
+        </label>
+        <button type="submit" id="searchButton">
+            Search
+            <div id="searchLoader" class="loader hidden"></div>
+        </button>
+    </form>
+    <div id="results"></div>
+    <script>
+        // Load countries on page load
+        async function loadCountries() {
+            const countryLoader = document.getElementById('countryLoader');
+            const countrySelect = document.getElementById('country');
+            
+            // Show loading spinner
+            countryLoader.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/search_countries');
+                const { countries } = await response.json(); // Extracting the 'countries' property from the response object
+                console.log(countries);
+
+                // Clear loading message
+                countrySelect.innerHTML = '<option value="">Select a country</option>';
+
+                // Check if countries is an array before iterating
+                if (Array.isArray(countries)) {
+                    countries.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country;
+                        option.textContent = country;
+                        countrySelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Unexpected response format:', countries);
+                    countrySelect.innerHTML = '<option value="">Failed to load countries</option>';
+                }
+            } catch (error) {
+                console.error('Failed to load countries:', error);
+                countrySelect.innerHTML = '<option value="">Failed to load countries</option>';
+            } finally {
+                // Hide loading spinner
+                countryLoader.classList.add('hidden');
+            }
+        }
+
+        // Load countries when page loads
+        window.addEventListener('DOMContentLoaded', loadCountries);
+
+        document.getElementById('searchForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
+            const searchButton = document.getElementById('searchButton');
+            const searchLoader = document.getElementById('searchLoader');
+            const resultsDiv = document.getElementById('results');
+            
+            // Show loading spinner and disable button
+            searchLoader.classList.remove('hidden');
+            searchButton.disabled = true;
+            resultsDiv.textContent = 'Searching...';
+            
+            try {
+                const country = document.getElementById('country').value;
+                const methodology = document.getElementById('methodology').value;
+                const name = document.getElementById('name').value;
+                
+                const response = await fetch('/search?country=' + encodeURIComponent(country) + '&methodology=' + encodeURIComponent(methodology) + '&name=' + encodeURIComponent(name));
+                const data = await response.json();
+                
+                resultsDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultsDiv.textContent = 'Error: Failed to search projects';
+                console.error('Search failed:', error);
+            } finally {
+                // Hide loading spinner and re-enable button
+                searchLoader.classList.add('hidden');
+                searchButton.disabled = false;
+            }
+        });
+    </script>
 </body>
+
 </html>
