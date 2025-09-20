@@ -30,20 +30,10 @@ We also want to make a simpler system that makes it easy for individuals unfamil
 ## Addressing Challenges
 **Why blockchain? Why not a database?**  
 - Traditional databases = centralized, prone to tampering and greenwashing.  
-- Blockchain = immutable, transparent, globally verifiable.  
+- Blockchain = immutable, transparent, globally verifiable by everyone. 
 
-## Hackathon Scope (MVP)
-For PennApps, we will deliver a **minimal but powerful demo**:  
+## Hackathon Scope (MVP) 
 
-- **Investor → Project → Impact Flow**: Select a demo project, invest, and see funds locked.  
-- **Milestone Simulation**: Trigger milestone completion (button) to release funds.  
-- **Proof-of-Impact NFT**: Minted certificate showing project, carbon saved, date.  
-- **Minimal UI**: Project list, funding tracker, investor’s NFT gallery.  
-
-## Business Model
-- **Transaction Fees**: % of funds flowing through contracts.  
-- **Verification Services**: Paid milestone validation.  
-- **Partnerships & Grants**: Early support from NGOs and foundations.  
 
 ---
 
