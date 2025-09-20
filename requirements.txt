@@ -2,3 +2,11 @@ web3
 python-dotenv
 fastapi
 uvicorn
+pymongo
+motor
+pydantic
+python-jose[cryptography]
+python-multipart
+authlib
+requests
+pymongo[srv]
