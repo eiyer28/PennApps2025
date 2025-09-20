@@ -11,12 +11,17 @@ export default function Search() {
   const [projectName, setProjectName] = useState('');
   const [projects, setProjects] = useState([]);
   const [cachedProjects, setCachedProjects] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [hasMoreProjects, setHasMoreProjects] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCountries, setIsLoadingCountries] = useState(false);
   const [isLoadingMethodologies, setIsLoadingMethodologies] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  const PROJECTS_PER_PAGE = 10;
 
   // Load countries and methodologies on page load
   useEffect(() => {
@@ -26,8 +31,15 @@ export default function Search() {
 
   // Auto search when country or methodology changes
   useEffect(() => {
+    console.log('Auto search triggered - Country:', selectedCountry, 'Methodology:', selectedMethodology);
+    setCurrentPage(1); // Reset to first page on new search
     autoSearch();
   }, [selectedCountry, selectedMethodology]);
+
+  // Update displayed projects when page changes
+  useEffect(() => {
+    updateDisplayedProjects();
+  }, [cachedProjects, currentPage]);
 
   // Search by name with debouncing
   useEffect(() => {
@@ -77,21 +89,72 @@ export default function Search() {
     }
 
     setIsLoading(true);
+    
+    // Build search URL with only selected parameters
+    const searchParams = new URLSearchParams();
+    if (selectedCountry) searchParams.append('country', selectedCountry);
+    if (selectedMethodology) searchParams.append('methodology', selectedMethodology);
+    
+    const searchUrl = `${API_BASE_URL}/search?${searchParams.toString()}`;
+    console.log('Searching with URL:', searchUrl);
+    
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/search?country=${encodeURIComponent(selectedCountry)}&methodology=${encodeURIComponent(selectedMethodology)}`
-      );
+      const response = await fetch(searchUrl);
       const data = await response.json();
       
-      // Cache the full results
-      const projectsData = data.items || [];
-      setCachedProjects(projectsData);
+      console.log('API Response:', data);
       
-      // Display top 10 lexicographically
+      // Cache the full results and filter out projects with no price or supply
+      const allProjects = data.items || [];
+      console.log('Raw projects from API:', allProjects.length);
+      
+      // Let's see a sample project structure
+      if (allProjects.length > 0) {
+        console.log('Sample project:', allProjects[0]);
+      }
+      
+      // OPTION 1: Show all projects (no filtering)
+      // const projectsData = allProjects;
+      
+      // OPTION 2: Filter only projects with supply > 0 (ignore price) - ENABLED
+      const projectsData = allProjects.filter(project => {
+        const hasValidSupply = project.stats && project.stats.totalSupply && project.stats.totalSupply > 0;
+        return hasValidSupply;
+      });
+      
+      // OPTION 3: Current strict filtering (price > 0 AND supply > 0)
+      // const projectsData = allProjects.filter(project => {
+      //   const hasValidPrice = project.price && parseFloat(project.price) > 0;
+      //   const hasValidSupply = project.stats && project.stats.totalSupply && project.stats.totalSupply > 0;
+      //   
+      //   // Debug first few projects to understand the data structure
+      //   if (allProjects.indexOf(project) < 3) {
+      //     console.log('Debug project structure:', {
+      //       name: project.name,
+      //       price: project.price,
+      //       priceType: typeof project.price,
+      //       stats: project.stats,
+      //       totalSupply: project.stats?.totalSupply,
+      //       hasValidPrice,
+      //       hasValidSupply
+      //     });
+      //   }
+      //   
+      //   return hasValidPrice && hasValidSupply;
+      // });
+      
+      console.log('Filtered projects:', projectsData.length, 'out of', allProjects.length);
+      
+      // Sort projects lexicographically
       const sortedProjects = [...projectsData].sort((a, b) => 
         (a.name || '').localeCompare(b.name || '')
       );
-      setProjects(sortedProjects.slice(0, 10));
+      
+      setCachedProjects(sortedProjects);
+      setTotalProjects(sortedProjects.length);
+      // Show "100+" if we got 100 items from API (our limit) and there are more in the database
+      setHasMoreProjects(allProjects.length >= 100 && data.itemsCount > allProjects.length);
+      setCurrentPage(1);
       
     } catch (error) {
       console.error('Auto search failed:', error);
@@ -101,15 +164,19 @@ export default function Search() {
     }
   };
 
+  const updateDisplayedProjects = () => {
+    const startIndex = (currentPage - 1) * PROJECTS_PER_PAGE;
+    const endIndex = startIndex + PROJECTS_PER_PAGE;
+    const currentPageProjects = cachedProjects.slice(startIndex, endIndex);
+    setProjects(currentPageProjects);
+  };
+
   const searchByName = () => {
     const searchTerm = projectName.trim().toLowerCase();
     
     if (!searchTerm) {
-      // If empty, show the current auto-search results
-      const sortedProjects = [...cachedProjects].sort((a, b) => 
-        (a.name || '').localeCompare(b.name || '')
-      );
-      setProjects(sortedProjects.slice(0, 10));
+      // If empty, show the current auto-search results (reset to first page)
+      setCurrentPage(1);
       return;
     }
 
@@ -119,11 +186,14 @@ export default function Search() {
     );
 
     if (matchingProjects.length > 0) {
-      // Found matches in cache, display them
+      // Found matches in cache, update cached projects and reset to first page
       const sortedMatches = matchingProjects.sort((a, b) => 
         (a.name || '').localeCompare(b.name || '')
       );
-      setProjects(sortedMatches.slice(0, 10));
+      setCachedProjects(sortedMatches);
+      setTotalProjects(sortedMatches.length);
+      setHasMoreProjects(false); // Local search, so no more projects
+      setCurrentPage(1);
     } else {
       // No matches in cache, wait 2s then do API search
       setProjects([{ name: 'No matches in current results. Searching API in 2 seconds...' }]);
@@ -142,12 +212,23 @@ export default function Search() {
       );
       const data = await response.json();
       
-      // Extract items array from response
-      const projectsData = data.items || [];
+      // Extract items array from response and filter for Option 2 (supply only)
+      const allProjects = data.items || [];
+      const projectsData = allProjects.filter(project => {
+        const hasValidSupply = project.stats && project.stats.totalSupply && project.stats.totalSupply > 0;
+        console.log('API Search - Project:', project.name, 'Supply:', project.stats?.totalSupply, 'Price:', project.price);
+        return hasValidSupply;
+      });
+      
       const sortedProjects = [...projectsData].sort((a, b) => 
         (a.name || '').localeCompare(b.name || '')
       );
-      setProjects(sortedProjects.slice(0, 10));
+      
+      setCachedProjects(sortedProjects);
+      setTotalProjects(sortedProjects.length);
+      // Show "100+" if we got 100 items from API (our limit) and there are more in the database
+      setHasMoreProjects(allProjects.length >= 100 && data.itemsCount > allProjects.length);
+      setCurrentPage(1);
       
     } catch (error) {
       console.error('API search failed:', error);
@@ -191,8 +272,8 @@ export default function Search() {
                 <option value="">
                   {isLoadingCountries ? 'Loading countries...' : 'Select a country'}
                 </option>
-                {countries.map(country => (
-                  <option key={country} value={country}>
+                {countries.map((country, index) => (
+                  <option key={`${country}-${index}`} value={country}>
                     {country}
                   </option>
                 ))}
@@ -213,8 +294,8 @@ export default function Search() {
                 <option value="">
                   {isLoadingMethodologies ? 'Loading methodologies...' : 'Select a methodology'}
                 </option>
-                {methodologies.map(methodology => (
-                  <option key={methodology} value={methodology}>
+                {methodologies.map((methodology, index) => (
+                  <option key={`${methodology}-${index}`} value={methodology}>
                     {methodology}
                   </option>
                 ))}
@@ -247,20 +328,106 @@ export default function Search() {
           ) : (
             <>
               {projects.length > 0 && (
-                <h3>Found {projects.length} projects:</h3>
-              )}
-              {projects.map((project, index) => (
-                <div key={project.id || index} className={styles.projectItem}>
-                  <div className={styles.projectName}>
-                    {project.name || 'Unnamed Project'}
-                  </div>
-                  {project.country && (
-                    <div className={styles.projectDetails}>
-                      Country: {project.country || 'N/A'} | 
-                      Category: {project.category || 'N/A'} | 
-                      ID: {project.id || 'N/A'}
+                <div className={styles.resultsHeader}>
+                  <h3>
+                    Found {hasMoreProjects ? `${totalProjects}+` : totalProjects} projects
+                    {totalProjects > PROJECTS_PER_PAGE && (
+                      <span className={styles.pageInfo}>
+                        {' '}(Page {currentPage} of {Math.ceil(totalProjects / PROJECTS_PER_PAGE)})
+                      </span>
+                    )}
+                  </h3>
+                  
+                  {totalProjects > PROJECTS_PER_PAGE && (
+                    <div className={styles.pagination}>
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className={styles.paginationButton}
+                      >
+                        ← Previous
+                      </button>
+                      
+                      <span className={styles.pageNumbers}>
+                        {Array.from({ length: Math.min(5, Math.ceil(totalProjects / PROJECTS_PER_PAGE)) }, (_, i) => {
+                          const startPage = Math.max(1, currentPage - 2);
+                          const pageNum = startPage + i;
+                          const maxPage = Math.ceil(totalProjects / PROJECTS_PER_PAGE);
+                          
+                          if (pageNum > maxPage) return null;
+                          
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`${styles.pageNumber} ${currentPage === pageNum ? styles.currentPage : ''}`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </span>
+                      
+                      <button 
+                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalProjects / PROJECTS_PER_PAGE), prev + 1))}
+                        disabled={currentPage >= Math.ceil(totalProjects / PROJECTS_PER_PAGE)}
+                        className={styles.paginationButton}
+                      >
+                        Next →
+                      </button>
                     </div>
                   )}
+                </div>
+              )}
+              {projects.map((project, index) => (
+                <div key={project.key || project.projectID || index} className={styles.projectItem}>
+                  <div className={styles.projectHeader}>
+                    <div className={styles.projectName}>
+                      {project.name || 'Unnamed Project'}
+                    </div>
+                    {project.registry && (
+                      <div className={styles.certificationBadge}>
+                        <div className={styles.badgeIcon}>
+                          <span className={styles.checkmark}>✓</span>
+                          <div className={styles.logoPlaceholder}></div>
+                        </div>
+                        <span className={styles.badgeText}>
+                          {project.registry} Certified
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {project.country || project.methodologies ? (
+                    <div className={styles.projectDetails}>
+                      <div className={styles.detailRow}>
+                        <strong>Location:</strong> {project.country}{project.region ? `, ${project.region}` : ''}
+                      </div>
+                      {project.methodologies && project.methodologies.length > 0 && (
+                        <div className={styles.detailRow}>
+                          <strong>Category:</strong> {project.methodologies[0].category} ({project.methodologies[0].name})
+                        </div>
+                      )}
+                      {project.price && (
+                        <div className={styles.detailRow}>
+                          <strong>Price:</strong> 
+                          {parseFloat(project.price) > 0 
+                            ? `$${project.price}` 
+                            : `$${project.price} (Not Currently Trading)`
+                          }
+                        </div>
+                      )}
+                      {project.stats && project.stats.totalSupply && (
+                        <div className={styles.detailRow}>
+                          <strong>Total Supply:</strong> {project.stats.totalSupply.toLocaleString()} tons CO₂
+                        </div>
+                      )}
+                      {project.projectID && (
+                        <div className={styles.detailRow}>
+                          <strong>Project ID:</strong> {project.projectID}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </>
