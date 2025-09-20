@@ -79,3 +79,4 @@ For PennApps, we will deliver a **minimal but powerful demo**:
 - **Samuel Lihn**
 - **Eashan Iyer**
 - **Jessi Shin**
+- **Mateo Taylor**
