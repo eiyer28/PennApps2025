@@ -380,11 +380,16 @@ export default function Search() {
                 </div>
               )}
               {projects.map((project, index) => (
-                <div key={project.key || project.projectID || index} className={styles.projectItem}>
-                  <div className={styles.projectHeader}>
-                    <div className={styles.projectName}>
-                      {project.name || 'Unnamed Project'}
-                    </div>
+                <Link 
+                  key={project.key || project.projectID || index} 
+                  href={`/project?id=${encodeURIComponent(project.key || project.projectID || index)}&name=${encodeURIComponent(project.name || 'Unnamed Project')}`}
+                  className={styles.projectItemLink}
+                >
+                  <div className={styles.projectItem}>
+                    <div className={styles.projectHeader}>
+                      <div className={styles.projectName}>
+                        {project.name || 'Unnamed Project'}
+                      </div>
                     {project.registry && (
                       <div className={styles.certificationBadge}>
                         <div className={styles.badgeIcon}>
@@ -429,6 +434,7 @@ export default function Search() {
                     </div>
                   ) : null}
                 </div>
+                </Link>
               ))}
             </>
           )}
