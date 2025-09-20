@@ -54,6 +54,12 @@ We also want to make a simpler system that makes it easy for individuals unfamil
 | Accessible UI for non-crypto    | ❌ (DeFi heavy)   | ✅ |
 
 ## Tech Stack  
+Frontend(specific tech not important for this) needs to do the following things:
+Be well designed, modern looking, and pretty so that the demo looks good. 
+Have a dashboard for transactions, a place where anyone can read the blockchain ledger, stripe button for people to but the credits, as well as a good looking landing page that explains the valueprop of our specific project. 
+
+Backend 
+We will use fastAPI for the backend API that will interface with the frontend. The backend should also have stripe webhooks to handle payment infrastructure, though this will all be testing for the case of our project. We need a cryptowallet connected to each user account, which will programatically be created for each user account. We will use auto0 for user authentication. Additionally the accounts and the transactions will be stored in a database which we will be using mongoDB for. There is also a web3.py api that will probably be useful here and the backend will primarily be in python. We will be using the CETH ethereum teching clockchain and probably the celera python ai as well here.
 
 ## Team
 - **Samuel Lihn**
