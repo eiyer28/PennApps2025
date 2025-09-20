@@ -1,9 +1,10 @@
-web3
+web3 
 python-dotenv
 fastapi
 uvicorn
 pymongo
 motor
+jinja2
 pydantic
 python-jose[cryptography]
 python-multipart

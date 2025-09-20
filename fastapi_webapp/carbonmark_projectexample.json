@@ -1,0 +1,114 @@
+{
+  "items": [
+    {
+      "description": "string",
+      "block_long_description": [
+        {
+          "_type": "string",
+          "_key": "string",
+          "children": [
+            {
+              "_type": "string",
+              "_key": "string",
+              "marks": [
+                "string"
+              ],
+              "text": "string"
+            }
+          ],
+          "markDefs": [
+            {
+              "_key": "string",
+              "_type": "string"
+            }
+          ],
+          "style": "string",
+          "listItem": "string",
+          "level": 0
+        }
+      ],
+      "long_description": "string",
+      "short_description": "string",
+      "key": "string",
+      "projectID": "string",
+      "name": "string",
+      "methodologies": [
+        {
+          "id": "string",
+          "category": "string",
+          "name": "string",
+          "sector": "string"
+        }
+      ],
+      "location": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        }
+      },
+      "url": "string",
+      "vintages": [
+        "string"
+      ],
+      "registry": "string",
+      "updatedAt": 0,
+      "country": "string",
+      "region": "string",
+      "price": "string",
+      "stats": {
+        "totalBridged": 0,
+        "totalRetired": 0,
+        "totalSupply": 0,
+        "totalListingsSupply": 0,
+        "totalPoolsSupply": 0
+      },
+      "images": [
+        {
+          "caption": "string",
+          "url": "string"
+        }
+      ],
+      "coverImage": {
+        "caption": "string",
+        "url": "string"
+      },
+      "satelliteImage": {
+        "caption": "string",
+        "url": "string"
+      },
+      "hasSupply": true,
+      "sustainableDevelopmentGoals": [
+        "2",
+        "7",
+        "1"
+      ],
+      "estAnnualMitigations": 0,
+      "developer": "string",
+      "assessor": "string",
+      "documents": [
+        {
+          "url": "string",
+          "filename": "string",
+          "category": "string",
+          "description": "string",
+          "size": 0,
+          "mimetype": "string"
+        }
+      ],
+      "status": "string",
+      "type": "string",
+      "standards": [
+        {
+          "name": "string",
+          "link": "string"
+        }
+      ]
+    }
+  ],
+  "itemsCount": 0,
+  "offset": 0
+}

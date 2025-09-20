@@ -4,5 +4,8 @@ venv
 .idea/
 .vscode/
 /node_modules
+__pycache__/
+*.pyc
+
 __pycache__
 client/nul

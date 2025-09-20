@@ -99,7 +99,7 @@ async def search_projects(
 	methodology: str = Query(None),
 	name: str = Query(None)
     ):
-	parameters = {"limit": 100}
+	parameters = {"limit": 100, "minSupply": 1}
 	if country: parameters['country'] = country
 	if methodology: parameters['category'] = methodology
 	if name: parameters['name'] = name
