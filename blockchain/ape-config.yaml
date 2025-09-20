@@ -1,12 +1,10 @@
 name: carbonchain
 foundry:
-  host: https://127.0.0.1:8545
-  fork:
-    ethereum:
-      mainnet:
-        upstream_provider: geth
+  host: http://localhost:8545
 
-geth:
-  ethereum:
-    mainnet:
-      uri: http://localhost:8545
+plugins:
+  - name: vyper
+  - name: foundry
+compile:
+  output_extra:
+     - ABI

@@ -29,7 +29,7 @@ def test_propose_project_and_getters(escrow, accounts_list, chain):
     assert p_beneficiary == beneficiary
     assert p_verifier == verifier
     assert p_meta == "ipfs://x"
-    assert p_state == 0  # Proposed
+    assert p_state == 1  # Proposed - enums are 1-indexed
     assert p_total == 0
     assert p_deadline == deadline
 
@@ -82,7 +82,7 @@ def test_only_verifier_can_verify_and_release(escrow, accounts_list):
 
     # State updated, totals cleared
     (_, _, _, _, state, total, _) = escrow.get_project(pid)
-    assert state == 1  # Verified
+    assert state == 2  # Verified - 1-indexed
     assert total == 0
 
     # Can't fund or verify/reject/cancel again
@@ -118,7 +118,7 @@ def test_verify_with_zero_contributions(escrow, accounts_list):
     # No ETH moved, but state should be Verified
     assert after == before
     (_, _, _, _, state, total, _) = escrow.get_project(pid)
-    assert state == 1  # Verified
+    assert state == 2  # Verified
     assert total == 0
 
 
