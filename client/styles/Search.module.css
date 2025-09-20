@@ -1,0 +1,305 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  margin: 0;
+  color: #333;
+}
+
+.homeButton {
+  background-color: #007cba;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.homeButton:hover {
+  background-color: #005a87;
+}
+
+.searchForm {
+  background-color: #f9f9f9;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.selectContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select, .input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+}
+
+.select:focus, .input:focus {
+  outline: none;
+  border-color: #007cba;
+  box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.1);
+}
+
+.searchButton {
+  background-color: #007cba;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.searchButton:hover:not(:disabled) {
+  background-color: #005a87;
+}
+
+.searchButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.results {
+  background-color: #f5f5f5;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.results h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.resultsHeader {
+  margin-bottom: 1.5rem;
+}
+
+.resultsHeader h3 {
+  margin-bottom: 1rem;
+}
+
+.pageInfo {
+  color: #666;
+  font-weight: normal;
+  font-size: 0.9rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.paginationButton {
+  background-color: #007cba;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #005a87;
+}
+
+.paginationButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pageNumbers {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pageNumber {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.pageNumber:hover {
+  background-color: #e0e0e0;
+}
+
+.currentPage {
+  background-color: #007cba;
+  color: white;
+  border-color: #007cba;
+}
+
+.currentPage:hover {
+  background-color: #005a87;
+}
+
+.projectItem {
+  background-color: white;
+  margin: 1rem 0;
+  padding: 1.5rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  transition: box-shadow 0.2s;
+  position: relative;
+}
+
+.projectItem:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.projectHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.projectName {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.certificationBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.badgeIcon {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.checkmark {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.logoPlaceholder {
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.badgeText {
+  font-size: 0.75rem;
+}
+
+.projectDetails {
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.detailRow {
+  margin-bottom: 0.3rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.detailRow strong {
+  color: #333;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+/* Loading spinner */
+.loader {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007cba;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .searchForm {
+    padding: 1.5rem;
+  }
+}
