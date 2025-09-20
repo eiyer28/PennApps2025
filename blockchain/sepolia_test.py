@@ -8,7 +8,7 @@ PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 CHAIN_ID = int(os.getenv("CHAIN_ID"))
 
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
-assert w3.is_connected(), "RPC not reachable"
+print(w3.is_connected())
 
 account = w3.eth.account.from_key(PRIVATE_KEY)
 # def build_tx(sender=None):

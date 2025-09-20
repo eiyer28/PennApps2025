@@ -1,0 +1,12 @@
+name: carbonchain
+foundry:
+  host: https://127.0.0.1:8545
+  fork:
+    ethereum:
+      mainnet:
+        upstream_provider: geth
+
+geth:
+  ethereum:
+    mainnet:
+      uri: http://localhost:8545

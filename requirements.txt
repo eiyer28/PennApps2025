@@ -3,4 +3,4 @@ python-dotenv
 fastapi
 uvicorn
 eth-ape
-vyper>=0.3.10,<0.4
+vyper>=0.3.10
