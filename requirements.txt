@@ -2,15 +2,12 @@ web3
 python-dotenv
 fastapi
 uvicorn
-<<<<<<< HEAD
-jinja2
-=======
 pymongo
 motor
+jinja2
 pydantic
 python-jose[cryptography]
 python-multipart
 authlib
 requests
 pymongo[srv]
->>>>>>> af807d2edb86785e63327eca1396e8f454ed9770

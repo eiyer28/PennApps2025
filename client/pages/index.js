@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from "next/link";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -131,8 +132,17 @@ export default function Home() {
 
       <div style={styles.container}>
         <header style={styles.header}>
-          <h1 style={styles.title}>🌱 CarbonChain</h1>
-          <p style={styles.subtitle}>Transparent Funding for Sustainable Projects</p>
+          <div style={styles.headerContent}>
+            <div>
+              <h1 style={styles.title}>🌱 CarbonChain</h1>
+              <p style={styles.subtitle}>Transparent Funding for Sustainable Projects</p>
+            </div>
+            <Link href="/search">
+              <button style={styles.searchButton}>
+                🔍 Search Projects
+              </button>
+            </Link>
+          </div>
         </header>
 
         {!user ? (
@@ -238,6 +248,27 @@ const styles = {
   header: {
     textAlign: 'center',
     marginBottom: '3rem',
+  },
+  headerContent: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    flexWrap: 'wrap',
+    gap: '1rem',
+  },
+  searchButton: {
+    backgroundColor: '#22c55e',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    transition: 'background-color 0.2s',
+    fontWeight: '600',
   },
   title: {
     fontSize: '3rem',
