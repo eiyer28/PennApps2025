@@ -16,7 +16,7 @@ class ProjectState(Enum):
 class ProjectVisualizer:
     def __init__(self):
         """Initialize the visualizer with API connection"""
-        self.api_url = "http://127.0.0.1:8000"
+        self.api_url = "http://127.0.0.1:9000"
         load_dotenv("test_accounts.env")
 
         # Color scheme for different project states

@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     created_at: datetime
+    address: str
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -32,6 +33,8 @@ class UserInDB(BaseModel):
     first_name: str
     last_name: str
     created_at: datetime
+    address: str
+    private_key: str
 
     model_config = ConfigDict(
         populate_by_name=True,

@@ -8,7 +8,7 @@ import json
 
 # Load environment variables and setup
 load_dotenv("test_accounts.env")  # Updated path since we're in blockchain directory
-API_URL = "http://127.0.0.1:8000"  # FastAPI server URL
+API_URL = "http://127.0.0.1:9000"  # FastAPI server URL
 
 # Test constants
 TONNES_OF_CARBON = 5.0

@@ -27,6 +27,10 @@ load_dotenv()
 # In-memory quote storage (in production, use database)
 quote_storage = {}
 
+
+BLOCKCHAIN_API_URL = os.getenv("BLOCKCHAIN_API_URL")
+ETH2DOLLAR = float(os.getenv("ETH2DOLLAR"))
+
 app = FastAPI(title="CarbonChain API", version="1.0.0")
 
 # CORS middleware
@@ -1016,9 +1020,9 @@ async def save_order_to_blockchain(order_data: dict, project_id: str, project_na
     try:
         # Get user details from database to extract email
         user = await get_user_by_id(user_id)
-        proposer_email = user.get('email', 'unknown@email.com') if user else user_id
+        funder_email = user.get('email', 'unknown@email.com') if user else user_id
         
-        print(f"Blockchain save - User lookup: {user_id} -> {proposer_email}")
+        print(f"Blockchain save - User lookup: {user_id} -> {funder_email}")
         
         # Get supplier names from selected sources for beneficiary_id
         sources = order_data.get("sources", [])
@@ -1033,18 +1037,74 @@ async def save_order_to_blockchain(order_data: dict, project_id: str, project_na
                 beneficiary_id = "UNKNOWN_SUPPLIER"
         else:
             beneficiary_id = "UNKNOWN_SUPPLIER"
-        
+        if not project_registry:
+            project_registry = "UNKNOWN_REGISTRY"
+
+        if await get_user_by_id(f"{beneficiary_id}@{beneficiary_id}.com") is None:
+            try:
+                await create_user(UserSignup(
+                    email=f"{beneficiary_id}@{beneficiary_id}.com",
+                    password="supplier",
+                    first_name=beneficiary_id,
+                    last_name="supplier"
+                ))
+            except ValueError as error:
+                pass
+
+
+        if await get_user_by_id(f"{project_registry}@{project_registry}.com") is None:
+            try:
+                await create_user(UserSignup(
+                    email=f"{project_registry}@{project_registry}.com",
+                    password="registry",
+                    first_name=project_registry,
+                    last_name="registry"
+                ))
+            except ValueError as error:
+                pass
+
+        amount = float(order_data.get("quantity", 0))
+        amount /= ETH2DOLLAR
         # Create blockchain record with proper data
         order_record = {
-            "proposer_id": proposer_email,  # User's email from database
-            "beneficiary_id": beneficiary_id,  # Supplier pool/source name
-            "verifier_id": project_registry or "Unknown Registry",
+            "proposer_id": funder_email,  # User's email from database
+            "beneficiary_id": f"{beneficiary_id}@{beneficiary_id}.com",  # Supplier pool/source name
+            "verifier_id": f"{project_registry}@{project_registry}.com",
             "initiative": project_name or "Unknown Project",
             "metadata_uri": project_url or "https://dayof.pennapps.com/",
-            "goal": float(order_data.get("quantity", 0))  # Convert to float
+            "goal": amount  # Convert to float
         }
         
+
         print(f"Blockchain record created: {order_record}")
+
+        response = requests.post(f"{BLOCKCHAIN_API_URL}/propose", json=order_record)
+        response.raise_for_status()
+
+        # Get the newly created project address
+        projects_response = requests.get(f"{BLOCKCHAIN_API_URL}/projects")
+        projects = projects_response.json()["projects"]
+        project_address = projects[-1]  # Get the latest project
+
+        funder_payload = {
+            "user_id": funder_email,
+            "project_address": project_address,
+            "amount": str(amount)
+        }
+        print(project_address)
+
+        response = requests.post(f"{BLOCKCHAIN_API_URL}/fund", json=funder_payload)
+        response.raise_for_status()
+
+        verify_payload = {
+            "verifier_id": f"{project_registry}@{project_registry}.com",
+            "project_address": project_address,
+        }
+
+        response = requests.post(f"{BLOCKCHAIN_API_URL}/verify", json=verify_payload)
+        response.raise_for_status()
+        print("Funding successful")
+
         return order_record
         
     except Exception as e:

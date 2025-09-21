@@ -9,7 +9,8 @@ from typing import List, Dict
 
 # Load environment variables and setup
 load_dotenv("test_accounts.env")
-API_URL = "http://127.0.0.1:8000"
+API_URL = "http://127.0.0.1:9000"
+
 
 # Test initiatives with their details
 INITIATIVES = [

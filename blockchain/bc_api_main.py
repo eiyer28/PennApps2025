@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 import uvicorn
+
+from app.database import connect_to_mongo, close_mongo_connection, get_pk_by_id, get_address_by_id
 from carbon_escrow import CarbonEscrowContract
 from pydantic import BaseModel
 from typing import List
@@ -11,20 +13,32 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv("test_accounts.env")
+load_dotenv("factory.env")
+
+
+
+app = FastAPI()
+# Database events
+@app.on_event("startup")
+async def startup_db_client():
+    await connect_to_mongo()
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    await close_mongo_connection()
 
 # placeholder function for unencrypting and getting private key from keystore
-def get_pk(account_id: str):
-    return os.getenv(f"{account_id}_PK")
-
-def get_addr(account_id: str):
-    return os.getenv(f"{account_id}")
-app = FastAPI()
+# def get_pk_by_id(account_id: str):
+#     return os.getenv(f"{account_id}_PK")
+#
+# def get_address_by_id(account_id: str):
+#     return os.getenv(f"{account_id}")
 
 # Initialize Web3 and contracts
 w3 = Web3(Web3.HTTPProvider("http://localhost:8545"))
 
 # Contract addresses - to be updated after deployment
-FACTORY_ADDRESS = "0x68B1D87F95878fE05B998F19b66F4baba5De1aed"
+FACTORY_ADDRESS = os.getenv("FACTORY_ADDRESS")
 
 # Initialize factory contract handler
 contract_handler = CarbonEscrowContract(
@@ -67,10 +81,11 @@ class ProjectResponse(BaseModel):
 async def propose(request: ProjectProposalRequest):
     """Create a new project contract"""
     try:
-        proposer_addr = get_addr(request.proposer_id)
-        beneficiary_addr = get_addr(request.beneficiary_id)
-        verifier_addr = get_addr(request.verifier_id)
-        proposer_pk = get_pk(request.proposer_id)
+        proposer_addr = await get_address_by_id(request.proposer_id)
+        beneficiary_addr = await get_address_by_id(request.beneficiary_id)
+        verifier_addr = await get_address_by_id(request.verifier_id)
+        proposer_pk = await get_pk_by_id(request.proposer_id)
+        print(proposer_addr)
 
         # Convert ETH goal to wei
         goal_wei = w3.to_wei(request.goal, 'ether')
@@ -83,6 +98,8 @@ async def propose(request: ProjectProposalRequest):
             goal=goal_wei,
             from_address=proposer_addr,
         )
+
+        print(tx)
 
 
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=proposer_pk)
@@ -97,20 +114,22 @@ async def fund(request: FundProjectRequest):
     """Fund an existing project"""
     try:
         project = contract_handler.get_project(request.project_address)
+        print(project)
         amount_wei = w3.to_wei(request.amount, 'ether')
-        funder_addr = get_addr(request.user_id)
+        funder_addr = await get_address_by_id(request.user_id)
 
         tx = project.fund(
             from_address=funder_addr,
             amount=amount_wei
         )
 
-        user_pk = get_pk(request.user_id)
+        user_pk = await get_pk_by_id(request.user_id)
 
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=user_pk)
 
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+
         return JSONResponse(content={"status": "success", "receipt": Web3.to_json(receipt)})
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -122,18 +141,18 @@ async def verify(request: VerifyRequest):
     try:
         project = contract_handler.get_project(request.project_address)
 
-        verifier_addr = get_addr(request.verifier_id)
+        verifier_addr = await get_address_by_id(request.verifier_id)
         print(verifier_addr)
-        verifier_pk = get_pk(request.verifier_id)
+        verifier_pk = await get_pk_by_id(request.verifier_id)
 
         try:
             tx = project.verify(verifier_addr)
+
+            signed_tx = w3.eth.account.sign_transaction(tx, private_key=verifier_pk)
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         except Exception as e:
             print(e)
-
-        signed_tx = w3.eth.account.sign_transaction(tx, private_key=verifier_pk)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
 
         return JSONResponse(content={"status": "success", "receipt": Web3.to_json(receipt)})
     except Exception as e:

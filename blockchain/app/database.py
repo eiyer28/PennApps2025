@@ -3,7 +3,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
 from typing import Optional
 from dotenv import load_dotenv
-from .fallback_db import FallbackClient
 
 # Load environment variables
 load_dotenv()
@@ -14,6 +13,25 @@ class Database:
     is_fallback = False
 
 db = Database()
+
+def format_email_extension_to_lowercase(email_address):
+    """
+    Converts the domain extension of an email address to lowercase.
+
+    Args:
+        email_address (str): The email address to format.
+
+    Returns:
+        str: The email address with the extension in lowercase.
+    """
+    if "@" not in email_address:
+        return email_address  # Not a valid email format, return as is
+
+    local_part, domain = email_address.split("@", 1)
+
+    formatted_domain = domain.lower()
+
+    return f"{local_part}@{formatted_domain}"
 
 async def get_database():
     return db.database
@@ -41,9 +59,6 @@ async def connect_to_mongo():
             print("INFO: Falling back to in-memory database for development...")
 
     # Fallback to in-memory database
-    db.client = FallbackClient()
-    db.database = db.client.carbonchain
-    db.is_fallback = True
 
     # Test fallback connection
     await db.client.admin.command('ping')
@@ -59,44 +74,14 @@ async def close_mongo_connection():
         else:
             print("Disconnected from MongoDB Atlas")
 
-async def save_order_to_history(order_data: dict):
-    """Save completed order to order history collection"""
-    try:
-        database = await get_database()
-        orders_collection = database.order_history
-        
-        # Insert the order record
-        result = await orders_collection.insert_one(order_data)
-        print(f"Order saved to history with ID: {result.inserted_id}")
-        return str(result.inserted_id)
-        
-    except Exception as e:
-        print(f"Error saving order to history: {e}")
-        # Don't fail the order if we can't save to history
-        return None
-
-async def get_user_orders(user_id: str):
-    """Get all orders for a specific user"""
-    try:
-        database = await get_database()
-        orders_collection = database.order_history
-        
-        # Find all orders for this user, sorted by creation date (newest first)
-        cursor = orders_collection.find({"user_id": user_id}).sort("created_at", -1)
-        orders = await cursor.to_list(length=None)
-        
-        return orders
-        
-    except Exception as e:
-        print(f"Error fetching user orders: {e}")
-        return []
-
-async def get_user_by_id(user_id: str):
+async def get_address_by_id(user_id: str):
     """Get user details by user ID"""
     try:
         database = await get_database()
         users_collection = database.users
-        
+
+        user_id = format_email_extension_to_lowercase(user_id)
+
         # Find user by ID or email (since userId could be either)
         user = await users_collection.find_one({
             "$or": [
@@ -104,12 +89,35 @@ async def get_user_by_id(user_id: str):
                 {"email": user_id}
             ]
         })
-        if user is None:
+        if not user:
             print(f"Could not find user: {user_id}")
             return None
+        
+        return user.get('address')
+    except Exception as e:
+        print(f"Error fetching user by ID: {e}")
+        return None
 
-        return user
+async def get_pk_by_id(user_id: str):
+    """Get user details by user ID"""
+    try:
+        database = await get_database()
+        users_collection = database.users
 
+        user_id = format_email_extension_to_lowercase(user_id)
+
+        # Find user by ID or email (since userId could be either)
+        user = await users_collection.find_one({
+            "$or": [
+                {"_id": user_id},
+                {"email": user_id}
+            ]
+        })
+
+        if not user:
+            print(f"Could not find user: {user_id}")
+
+        return user.get('private_key')
     except Exception as e:
         print(f"Error fetching user by ID: {e}")
         return None

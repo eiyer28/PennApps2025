@@ -50,3 +50,5 @@ fi
 
 echo "Escrow Contract deployed to: $DEPLOYED_TO"
 
+echo "FACTORY_ADDRESS=$DEPLOYED_TO" > ../factory.env
+
