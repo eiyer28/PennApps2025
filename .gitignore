@@ -9,3 +9,4 @@ __pycache__/
 
 __pycache__
 client/nul
+/blockchain/test_accounts.env
