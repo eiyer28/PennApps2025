@@ -7,16 +7,17 @@ from eth_utils import to_wei, from_wei
 API_URL = "http://127.0.0.1:8000"
 w3 = Web3(Web3.HTTPProvider("http://localhost:8545"))
 assert w3.is_connected()
-# Get test accounts from local Foundry chain
-
 
 PROPOSER_ACCNAME = "ACCOUNT_0"
 BENEFICIARY_ACCNAME = "ACCOUNT_1"
 VERIFIER_ACCNAME = "ACCOUNT_2"
 FUNDER_ACCNAME = "ACCOUNT_3"
 
-def create_proposal() -> str:
-    """Create a new project contract
+def create_proposal(goal_eth: float = 1.0) -> str:
+    """Create a new project contract with specified goal
+
+    Args:
+        goal_eth: Goal amount in ETH (default 1.0 ETH)
 
     Returns:
         str: Address of the deployed project contract
@@ -25,16 +26,16 @@ def create_proposal() -> str:
         "proposer_id": PROPOSER_ACCNAME,
         "beneficiary_id": BENEFICIARY_ACCNAME,
         "verifier_id": VERIFIER_ACCNAME,
+        "initiative": "Test Initiative",
         "metadata_uri": "ipfs://QmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX",
-        "deadline": int(time.time()) + 86400  # 24 hours from now
+        "goal": goal_eth
     }
 
-    print("\nCreating new project proposal...")
+    print(f"\nCreating new project proposal with goal {goal_eth} ETH...")
     resp = requests.post(f"{API_URL}/propose", json=payload)
     print("Response:", resp.json()["status"])
 
-
-    # For now, we'll get the project address from the /projects endpoint
+    # Get the project address from the /projects endpoint
     resp = requests.get(f"{API_URL}/projects")
     print("All projects:", resp.json())
     projects = resp.json()["projects"]
@@ -96,28 +97,36 @@ def run_test_flow():
     """Run through a complete test flow"""
     print("Starting test flow...")
 
-    # 1. Create new project
-    project_address = create_proposal()
+    # 1. Create new project with 2 ETH goal
+    project_address = create_proposal(goal_eth=2.0)
     if not project_address:
-        print("Failed to get project address")
+        print("Failed to create project")
         return
 
-    # 2. Get initial project state
-    project_before = get_project_details(project_address)
+    # 2. Get initial project details
+    details = get_project_details(project_address)
+    print("Initial project goal:", details["project"]["goal"], "ETH")
 
-    # 3. Fund the project with 1 ETH
-    fund_tx = fund_project(project_address, 1.0)
+    # 3. Try to fund with less than goal
+    fund_result = fund_project(project_address, 1.0)
 
-    # 4. Check project state after funding
-    project_after_funding = get_project_details(project_address)
+    # 4. Try to verify (should fail as goal not met)
+    try:
+        verify_project(project_address)
+        print("ERROR: Verification should have failed")
+    except Exception as e:
+        print("Expected verification failure (goal not met):", str(e))
 
-    # 5. Have verifier verify the project
-    verify_tx = verify_project(project_address)
+    # 5. Fund to meet goal
+    fund_result = fund_project(project_address, 1.0)
 
-    # 6. Get final project state
-    project_final = get_project_details(project_address)
+    # 6. Verify project (should succeed now)
+    verify_result = verify_project(project_address)
+    print("Final verification result:", verify_result)
 
-    print("\nTest flow complete!")
+    # 7. Get final project details
+    final_details = get_project_details(project_address)
+    print("Final project state:", final_details)
 
 
 if __name__ == "__main__":
