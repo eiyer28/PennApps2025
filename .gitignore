@@ -4,9 +4,8 @@ venv
 .idea/
 .vscode/
 /node_modules
-__pycache__/
+**/__pycache__/
+client/nul
 *.pyc
-
-__pycache__
 client/nul
 /blockchain/test_accounts.env
