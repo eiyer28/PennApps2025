@@ -3,7 +3,6 @@ import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import gsap from "gsap";
 import Card from "./card.jsx";
 
 const geistSans = Geist({

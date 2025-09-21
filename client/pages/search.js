@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import Navbar from '../components/Navbar';
 import styles from '../styles/Search.module.css';
 
 export default function Search() {
@@ -250,6 +251,8 @@ export default function Search() {
         <title>Carbon Project Search</title>
         <meta name="description" content="Search carbon offset projects" />
       </Head>
+
+      <Navbar />
 
       <div className={styles.container}>
         <header className={styles.header}>
