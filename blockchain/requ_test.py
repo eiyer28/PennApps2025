@@ -1,17 +1,19 @@
 import requests
 import time
 from web3 import Web3
+import os
 from eth_utils import to_wei, from_wei
 
 API_URL = "http://127.0.0.1:8000"
 w3 = Web3(Web3.HTTPProvider("http://localhost:8545"))
-
+assert w3.is_connected()
 # Get test accounts from local Foundry chain
-TEST_ACCOUNTS = w3.eth.accounts
-PROPOSER_ADDRESS = TEST_ACCOUNTS[0]
-BENEFICIARY_ADDRESS = TEST_ACCOUNTS[1]
-VERIFIER_ADDRESS = TEST_ACCOUNTS[2]
-FUNDER_ADDRESS = TEST_ACCOUNTS[3]
+
+
+PROPOSER_ACCNAME = "ACCOUNT_0"
+BENEFICIARY_ACCNAME = "ACCOUNT_1"
+VERIFIER_ACCNAME = "ACCOUNT_2"
+FUNDER_ACCNAME = "ACCOUNT_3"
 
 def create_proposal() -> str:
     """Create a new project contract
@@ -20,9 +22,9 @@ def create_proposal() -> str:
         str: Address of the deployed project contract
     """
     payload = {
-        "proposer_address": PROPOSER_ADDRESS,
-        "beneficiary_address": BENEFICIARY_ADDRESS,
-        "verifier_address": VERIFIER_ADDRESS,
+        "proposer_id": PROPOSER_ACCNAME,
+        "beneficiary_id": BENEFICIARY_ACCNAME,
+        "verifier_id": VERIFIER_ACCNAME,
         "metadata_uri": "ipfs://QmT5NvUtoM5nWFfrQdVrFtvGfKFmG7AHE8P34isapyhCxX",
         "deadline": int(time.time()) + 86400  # 24 hours from now
     }
@@ -31,10 +33,6 @@ def create_proposal() -> str:
     resp = requests.post(f"{API_URL}/propose", json=payload)
     print("Response:", resp.json())
 
-    # In a real scenario, we would wait for the transaction to be mined
-    # and extract the project address from the ProjectCreated event
-    tx = resp.json()["transaction"]
-    print("Deploy transaction:", tx)
 
     # For now, we'll get the project address from the /projects endpoint
     resp = requests.get(f"{API_URL}/projects")
@@ -44,6 +42,7 @@ def create_proposal() -> str:
     print("Deployed project address:", project_address)
 
     return project_address
+
 
 def fund_project(project_address: str, amount_eth: float):
     """Fund an existing project with ETH
@@ -63,6 +62,7 @@ def fund_project(project_address: str, amount_eth: float):
     print("Response:", resp.json())
     return resp.json()
 
+
 def verify_project(project_address: str):
     """Verify a project and release funds"""
     payload = {
@@ -75,6 +75,7 @@ def verify_project(project_address: str):
     print("Response:", resp.json())
     return resp.json()
 
+
 def get_project_details(project_address: str):
     """Get project details including contributors"""
     print(f"\nGetting details for project {project_address}...")
@@ -82,12 +83,14 @@ def get_project_details(project_address: str):
     print("Response:", resp.json())
     return resp.json()
 
+
 def list_all_projects():
     """Get all deployed projects"""
     print("\nListing all projects...")
     resp = requests.get(f"{API_URL}/projects")
     print("Response:", resp.json())
     return resp.json()
+
 
 def run_test_flow():
     """Run through a complete test flow"""
@@ -115,6 +118,7 @@ def run_test_flow():
     project_final = get_project_details(project_address)
 
     print("\nTest flow complete!")
+
 
 if __name__ == "__main__":
     run_test_flow()

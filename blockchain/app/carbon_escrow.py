@@ -60,22 +60,24 @@ class CarbonProjectContract:
 
 class CarbonEscrowContract:
     """Factory contract that deploys individual project contracts"""
-    def __init__(self, abi_path: str, web3_provider: str, contract_address: str):
+    def __init__(self, factory_abi_path: str, contract_abi_path: str, web3_provider: str, contract_address: str):
         self.web3 = Web3(Web3.HTTPProvider(web3_provider))
         self.contract_address = self.web3.to_checksum_address(contract_address)
         self.contract = None
         self.project_abi = None
         self.factory_abi = None
-        self.load_abis(abi_path)
+        self.load_abis(factory_abi_path, contract_abi_path)
 
-    def load_abis(self, abi_path: str):
+    def load_abis(self, factory_abi_path: str, contract_abi_path: str):
         """Load contract ABIs from file"""
         try:
-            with open(abi_path) as f:
-                contract_json = json.load(f)
                 # Load both factory and project ABIs
-                self.factory_abi = contract_json['contractTypes']['CarbonEscrow']['abi']
-                self.project_abi = contract_json['contractTypes']['CarbonProject']['abi']
+                fabi = open(factory_abi_path)
+                cabi = open(contract_abi_path)
+                self.factory_abi = json.load(fabi)["abi"]
+                self.project_abi = json.load(cabi)["abi"]
+                fabi.close()
+                cabi.close()
                 self.contract = self.web3.eth.contract(
                     address=self.contract_address,
                     abi=self.factory_abi

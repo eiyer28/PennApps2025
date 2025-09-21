@@ -3,7 +3,7 @@
 .cache/
 
 # Python
-.env
+test_accounts.env
 .venv
 .pytest_cache
 .python-version

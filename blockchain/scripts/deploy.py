@@ -1,41 +1,43 @@
 from ape import accounts, project, networks
+from ape_accounts import import_account_from_private_key
 from web3 import Web3
+import os
+from dotenv import load_dotenv
+load_dotenv("test_accounts.env")
 
 def deploy():
     """Deploy contracts to local Foundry chain"""
     # Connect to local Foundry network
     with networks.ethereum.local.use_provider("foundry"):
-        print("Connected to local Foundry network")
+        account = os.getenv("ACCOUNT_0")
+        account_pk = os.getenv("ACCOUNT_0_PK")
+        try:
+            account = accounts.load("ACCOUNT_0")
+        except:
+            account = import_account_from_private_key("ACCOUNT_0", "ACCOUNT_0", account_pk)
 
-        # Use first test account
-        account = accounts.test_accounts[0]
-        print(f"Deploying from address: {account.address}")
-
-        # First deploy Project implementation with dummy values
-        # These values don't matter since this is just the implementation
-        print("\nDeploying Project implementation...")
+        # Deploy Project implementation with valid test values
         project_impl = account.deploy(
             project.CarbonProject,
-            account.address,  # proposer
-            account.address,  # beneficiary
-            account.address,  # verifier
-            "dummy_uri",     # metadata_uri
-            0               # deadline
+            account.address,      # proposer - use deployer address
+            accounts.test_accounts[1].address,  # beneficiary - use different test account
+            accounts.test_accounts[2].address,  # verifier - use different test account
+            "ipfs://test",       # metadata_uri
+            1735689600,          # deadline - set future timestamp
+            sender=account
         )
-        print(f"Project implementation deployed at: {project_impl.address}")
 
-        # Then deploy CarbonEscrow factory with Project implementation address
-        print("\nDeploying CarbonEscrow factory...")
-        factory = account.deploy(project.CarbonEscrow, project_impl.address)
-        print(f"CarbonEscrow factory deployed at: {factory.address}")
-
-        print("\nDeployment complete! Update these addresses in your bc_api_main.py:")
-        print(f"FACTORY_ADDRESS = \"{factory.address}\"")
-
+        # Deploy factory with verified implementation
+        # factory = account.deploy(project.CarbonEscrow, project_impl.address)
+        # print(f"Project implementation deployed at: {project_impl.address}")
+        # print(f"CarbonEscrow factory deployed at: {factory.address}")
+        # print("\nDeployment complete! Update these addresses in your bc_api_main.py:")
+        # print(f"FACTORY_ADDRESS = \"{factory.address}\"")
         return {
             "project_implementation": project_impl.address,
-            "factory": factory.address
+            # "factory": factory.address
         }
+
 
 def main():
     """Main deployment function"""
