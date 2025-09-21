@@ -10,8 +10,9 @@ contract CarbonEscrow {
         address proposer,
         address beneficiary,
         address verifier,
+        string initiative,
         string metadata_uri,
-        uint256 deadline
+        uint256 goal
     );
 
     constructor(address project_implementation) {
@@ -22,20 +23,22 @@ contract CarbonEscrow {
     function propose_project(
         address beneficiary,
         address verifier,
+        string calldata initiative,
         string calldata metadata_uri,
-        uint256 deadline
+        uint256 goal
     ) external returns (address) {
+        require(goal > 0, "Goal must be positive");
         address project = _createClone(implementation);
 
-        // Fix: Updated function signature to match CarbonProject.__init__
         (bool success,) = project.call(
             abi.encodeWithSignature(
-                "__init__(address,address,address,string,uint256)",
+                "__init__(address,address,address,string,string,uint256)",
                 msg.sender,
                 beneficiary,
                 verifier,
+                initiative,
                 metadata_uri,
-                deadline
+                goal
             )
         );
         require(success, "Project initialization failed");
@@ -47,8 +50,9 @@ contract CarbonEscrow {
             msg.sender,
             beneficiary,
             verifier,
+            initiative,
             metadata_uri,
-            deadline
+            goal
         );
 
         return project;
