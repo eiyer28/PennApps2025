@@ -94,7 +94,22 @@ export default function MenuBar() {
         </Link>
         
         <Link 
-          href="/learn-more" 
+          href="/funding-network"
+          style={menuItemStyle}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(0,0,0,0.1)';
+            e.target.style.borderColor = 'rgba(0,0,0,0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.borderColor = 'transparent';
+          }}
+        >
+          View Network
+        </Link>
+
+        <Link
+          href="/learn-more"
           style={menuItemStyle}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(0,0,0,0.1)';

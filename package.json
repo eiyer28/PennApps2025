@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "force-graph": "^1.51.0",
+    "react-force-graph": "^1.48.1",
+    "react-force-graph-2d": "^1.29.0"
+  }
+}

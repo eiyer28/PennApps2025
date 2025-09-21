@@ -15,11 +15,11 @@ from datetime import datetime
 # Import our modules
 from app.database import connect_to_mongo, close_mongo_connection, save_order_to_history, get_user_orders, get_user_by_id
 from app.models import (
-    UserSignup, UserLogin, UserResponse, PurchaseRequest, PurchaseConfirmationRequest, 
-    PurchaseResponse, AssetSource, SupplierSelection, OrderItem, RetirementDetails,
-    CarbonmarkOrderRequest, CarbonmarkOrderResponse, QuoteStorage, OrderHistory
+    UserSignup, UserLogin, UserResponse, PurchaseRequest, PurchaseConfirmationRequest,
+    PurchaseResponse, AssetSource, SupplierSelection, CarbonmarkOrderResponse, QuoteStorage
 )
 from app.auth_service import create_user, authenticate_user
+from app.visualize_projects import get_funding_tree_json
 
 # Load environment variables
 load_dotenv()
@@ -798,10 +798,10 @@ async def execute_purchase(confirmation_request: PurchaseConfirmationRequest):
         if not stored_quote.carbonmarkQuoteId:
             raise HTTPException(status_code=500, detail="Missing Carbonmark quote UUID")
         if not full_name or len(full_name.strip()) < 1:
-            raise HTTPException(status_code=400, detail="Beneficiary name is required and must be at least 1 character")
+            raise HTTPException(status_code=400, detail="Beneficiary name is required")
         if not confirmation_request.retirementMessage.strip() or len(confirmation_request.retirementMessage.strip()) < 1:
-            raise HTTPException(status_code=400, detail="Retirement message is required and must be at least 1 character")
-        
+            raise HTTPException(status_code=400, detail="Retirement message is required")
+
         # Order request matching API documentation format
         order_request_data = {
             "quote_uuid": stored_quote.carbonmarkQuoteId,
@@ -1046,7 +1046,7 @@ async def save_order_to_blockchain(order_data: dict, project_id: str, project_na
                     email=f"{beneficiary_id}@{beneficiary_id}.com",
                     password="supplier",
                     first_name=beneficiary_id,
-                    last_name="supplier"
+                    last_name=""
                 ))
             except ValueError as error:
                 pass
@@ -1058,7 +1058,7 @@ async def save_order_to_blockchain(order_data: dict, project_id: str, project_na
                     email=f"{project_registry}@{project_registry}.com",
                     password="registry",
                     first_name=project_registry,
-                    last_name="registry"
+                    last_name=""
                 ))
             except ValueError as error:
                 pass
@@ -1181,6 +1181,12 @@ async def get_project_details(project_id: str):
             content={"error": "Failed to fetch project details from Carbonmark API"}, 
             status_code=500
         )
+
+@app.get("/funding_tree")
+async def funding_tree():
+    """API endpoint to return the funding tree JSON for frontend visualization."""
+    data = await get_funding_tree_json()
+    return JSONResponse(content=data)
 
 
 

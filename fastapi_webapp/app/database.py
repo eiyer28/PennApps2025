@@ -113,3 +113,28 @@ async def get_user_by_id(user_id: str):
     except Exception as e:
         print(f"Error fetching user by ID: {e}")
         return None
+
+async def get_user_by_crypto_address(crypto_address: str):
+    """Get user details by crypto/wallet address"""
+    try:
+        database = await get_database()
+        users_collection = database.users
+
+        # Find user by wallet address
+        user = await users_collection.find_one({
+            "address": crypto_address
+        })
+
+        if user:
+            return {
+                "first_name": user.get("first_name", ""),
+                "last_name": user.get("last_name", ""),
+                "email": user.get("email", ""),
+                "full_name": f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
+            }
+
+        return None
+
+    except Exception as e:
+        print(f"Error fetching user by crypto address: {e}")
+        return None

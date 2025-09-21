@@ -6,6 +6,11 @@ import os
 from dotenv import load_dotenv
 from typing import Dict, List
 from enum import Enum
+import asyncio
+from .database import get_user_by_crypto_address
+
+load_dotenv()
+ETH2DOLLAR = float(os.getenv("ETH2DOLLAR", "0"))
 
 class ProjectState(Enum):
     PROPOSED = "Proposed"
@@ -17,7 +22,6 @@ class ProjectVisualizer:
     def __init__(self):
         """Initialize the visualizer with API connection"""
         self.api_url = "http://127.0.0.1:9000"
-        load_dotenv("test_accounts.env")
 
         # Color scheme for different project states
         self.state_colors = {
@@ -26,6 +30,33 @@ class ProjectVisualizer:
             ProjectState.REJECTED.value: '#FFB6C1',  # Light red
             ProjectState.CANCELED.value: '#D3D3D3'   # Light gray
         }
+
+    async def get_pretty_name(self, crypto_address: str) -> dict:
+        """Get pretty name and email for a crypto address"""
+        try:
+            user_info = await get_user_by_crypto_address(crypto_address)
+            if user_info and user_info["full_name"]:
+                return {
+                    "display_name": user_info["full_name"],
+                    "email": user_info["email"],
+                    "full_name": user_info["full_name"]
+                }
+            else:
+                # Fallback to shortened address if no user found
+                short_address = f"{crypto_address[:8]}..." if len(crypto_address) > 8 else crypto_address
+                return {
+                    "display_name": short_address,
+                    "email": crypto_address,
+                    "full_name": short_address
+                }
+        except Exception as e:
+            print(f"Error getting pretty name for {crypto_address}: {e}")
+            short_address = f"{crypto_address[:8]}..." if len(crypto_address) > 8 else crypto_address
+            return {
+                "display_name": short_address,
+                "email": crypto_address,
+                "full_name": short_address
+            }
 
     def fetch_projects(self) -> List[dict]:
         """Fetch all projects from the API"""
@@ -57,8 +88,9 @@ class ProjectVisualizer:
         
         # Initialize data structures
         initiative_tree = defaultdict(lambda: {
-            'total_funding': 0,
-            'funders': defaultdict(lambda: {'amount': 0.0, 'projects': set()}),
+            'total_funding_eth': 0,
+            'total_funding_usd': 0,
+            'funders': defaultdict(lambda: {'amount_eth': 0.0, 'amount_usd': 0.0, 'projects': set()}),
             'projects': [],
             'states': defaultdict(int)
         })
@@ -82,17 +114,23 @@ class ProjectVisualizer:
                 # Handle dict-style contributors
                 for funder, contribution in contributors.items():
                     amount = float(contribution.get("amount", 0))
-                    initiative_data['funders'][funder]['amount'] += amount
+                    usd_amount = round(amount * ETH2DOLLAR, 2)
+                    initiative_data['funders'][funder]['amount_eth'] += amount
+                    initiative_data['funders'][funder]['amount_usd'] += usd_amount
                     initiative_data['funders'][funder]['projects'].add(project["address"])
-                    initiative_data['total_funding'] += amount
+                    initiative_data['total_funding_eth'] += amount
+                    initiative_data['total_funding_usd'] += usd_amount
             else:
                 # Handle list-style contributors
                 for contribution in contributors:
                     funder = contribution.get("address", "unknown")
                     amount = float(contribution.get("amount", 0))
-                    initiative_data['funders'][funder]['amount'] += amount
+                    usd_amount = round(amount * ETH2DOLLAR, 2)
+                    initiative_data['funders'][funder]['amount_eth'] += amount
+                    initiative_data['funders'][funder]['amount_usd'] += usd_amount
                     initiative_data['funders'][funder]['projects'].add(project["address"])
-                    initiative_data['total_funding'] += amount
+                    initiative_data['total_funding_eth'] += amount
+                    initiative_data['total_funding_usd'] += usd_amount
 
         return dict(initiative_tree)
 
@@ -102,18 +140,18 @@ class ProjectVisualizer:
         
         # Add initiative nodes
         for initiative, info in data.items():
-            if info['total_funding'] > 0:
+            if info['total_funding_eth'] > 0:
                 # Calculate dominant state for color
                 states = info['states']
                 dominant_state = max(states.items(), key=lambda x: x[1])[0]
                 node_color = self.state_colors.get(dominant_state, '#ADD8E6')
 
-                node_size = min(15000, max(5000, info['total_funding'] * 200))
+                node_size = min(15000, max(5000, info['total_funding_eth'] * 200))
                 G.add_node(initiative, node_type='initiative',
                           size=node_size, color=node_color,
-                          total_funding=info['total_funding'],
+                          total_funding=info['total_funding_eth'],
                           num_projects=len(info['projects']))
- # Add funder nodes and connections
+                # Add funder nodes and connections
                 for funder, funder_info in info['funders'].items():
                     funder_id = f"funder_{funder[:8]}"
                     if not G.has_node(funder_id):
@@ -122,7 +160,7 @@ class ProjectVisualizer:
                         G.add_node(funder_id, node_type='funder',
                                  size=funder_size, color='#98FB98')
                     G.add_edge(funder_id, initiative,
-                             weight=funder_info['amount'],
+                             weight=funder_info['amount_eth'],
                              num_projects=len(funder_info['projects']))
 
         if len(G.nodes) == 0:
@@ -173,29 +211,68 @@ class ProjectVisualizer:
         plt.savefig('funding_network.png', dpi=300, bbox_inches='tight')
         plt.close()
 
+    async def format_tree_structure(self, data: Dict) -> Dict:
+        """Formats the funding tree structure for JSON serialization with pretty names"""
+        formatted_data = {}
+        for initiative, info in data.items():
+            # Get pretty names for all funders
+            funders_with_names = {}
+            for funder, funder_info in info['funders'].items():
+                pretty_name_info = await self.get_pretty_name(funder)
+                funders_with_names[funder] = {
+                    'amount_eth': funder_info['amount_eth'],
+                    'amount_usd': round(funder_info['amount_usd'], 2),
+                    'projects': list(funder_info['projects']),
+                    'display_name': pretty_name_info['display_name'],
+                    'email': pretty_name_info['email'],
+                    'full_name': pretty_name_info['full_name']
+                }
+
+            # Add verifier and beneficiary information from project data
+            verifiers = set()
+            beneficiaries = set()
+            for project in info['projects']:
+                # Try to get additional project details from blockchain
+                try:
+                    project_address = project['address']
+                    details_response = requests.get(f"{self.api_url}/project/{project_address}")
+                    if details_response.status_code == 200:
+                        project_details = details_response.json()["project"]
+                        if 'verifier' in project_details:
+                            verifier_name = await self.get_pretty_name(project_details['verifier'])
+                            verifiers.add(verifier_name['display_name'])
+                        if 'beneficiary' in project_details:
+                            beneficiary_name = await self.get_pretty_name(project_details['beneficiary'])
+                            beneficiaries.add(beneficiary_name['display_name'])
+                except Exception as e:
+                    print(f"Error fetching project details for {project_address}: {e}")
+
+            formatted_data[initiative] = {
+                'total_funding_eth': info['total_funding_eth'],
+                'total_funding_usd': round(info['total_funding_usd'], 2),
+                'funders': funders_with_names,
+                'projects': info['projects'],
+                'states': dict(info['states']),
+                'verifiers': list(verifiers) if verifiers else ['Unknown Verifier'],
+                'beneficiaries': list(beneficiaries) if beneficiaries else ['Unknown Beneficiary']
+            }
+        return formatted_data
+
     def export_tree_structure(self, data: Dict, output_file: str = 'funding_tree.json'):
         """Exports the funding tree structure to a JSON file"""
         import json
-        
-        # Convert defaultdict to regular dict and format amounts
-        formatted_data = {}
-        for initiative, info in data.items():
-            formatted_data[initiative] = {
-                'total_funding': info['total_funding'],
-                'funders': {
-                    funder: {
-                        'amount': funder_info['amount'],
-                        'projects': list(funder_info['projects'])
-                    }
-                    for funder, funder_info in info['funders'].items()
-                },
-                'projects': info['projects'],
-                'states': dict(info['states'])
-            }
-            
+        formatted_data = self.format_tree_structure(data)
         with open(output_file, 'w') as f:
             json.dump(formatted_data, f, indent=2)
         print(f"Tree structure exported to {output_file}")
+
+# --- API-friendly function ---
+async def get_funding_tree_json(api_url: str = "http://127.0.0.1:9000") -> dict:
+    """Returns the funding tree JSON for API use with pretty names"""
+    visualizer = ProjectVisualizer()
+    visualizer.api_url = api_url
+    funding_data = visualizer.analyze_projects()
+    return await visualizer.format_tree_structure(funding_data)
 
 def main():
     visualizer = ProjectVisualizer()
