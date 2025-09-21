@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import Navbar from '../components/Navbar';
+import MenuBar from './menu-bar.jsx';
 import styles from '../styles/Project.module.css';
 
 const ProjectDetails = () => {
@@ -103,9 +103,9 @@ const ProjectDetails = () => {
         <meta name="description" content="View carbon project details" />
       </Head>
 
-      <Navbar />
+      <MenuBar />
 
-      <div className={styles.container}>
+      <div className={styles.container} style={{paddingTop: '100px'}}>
         <div className={styles.header}>
           <Link href="/search" className={styles.backButton}>
             ← Back to Search

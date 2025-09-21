@@ -7,7 +7,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Card from "./card.jsx";
 import Cloud from "./cloud.jsx";
-import MenuButton from "./menu-button.jsx";
 import MenuBar from "./menu-bar.jsx";
 import Button from "./button.jsx";
 
@@ -179,7 +178,7 @@ export default function Home() {
                 societies. <br></br> <br></br>
 
                 We aim to solve this problem by creating a platform that <em>utilizes
-                blockchain</em> as a regulatory structure to ensure <em>traceability</em> 
+                blockchain</em> as a regulatory structure to ensure <em>traceability</em>  
                 and <em>transparency</em> of these projects.
               </>
             }
@@ -187,6 +186,7 @@ export default function Home() {
             titleFontSize="24px"
             contentFontSize="18px"
             padding="30px"
+            button={true}
           />
         </div>
 

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Button from './button.jsx';
 
 export default function Card({ 
   height, 
@@ -10,7 +11,8 @@ export default function Card({
   showBorder = false, 
   titleFontSize = '1.2rem', 
   contentFontSize = '0.9rem',
-  padding = '16px'
+  padding = '16px',
+  button = null
 }) {
   const handleClick = () => {
     if (link) {
@@ -30,7 +32,8 @@ export default function Card({
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
-    ...(showBorder && { border: '1px solid #e0e0e0' })
+    ...(showBorder && { border: '1px solid #e0e0e0' }),
+    ...({button})
   };
 
   const hoverStyle = link ? {
@@ -87,6 +90,11 @@ export default function Card({
         <p style={{ margin: 0, color: 'var(--textcolor)', lineHeight: '1.4', fontSize: contentFontSize }}>
           {content}
         </p>
+        {button && (
+          <div style={{marginTop: '20px', display: 'flex', justifyContent: 'center'}}>
+                  <Button text="Learn More" link="/learn-more" />
+                </div>
+        )}
       </div>
     </div>
   );

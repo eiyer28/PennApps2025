@@ -1,4 +1,12 @@
-export default function Button({ text, link }) {
+export default function Button({ text, link, onClick }) {
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (link) {
+      window.location.href = link;
+    }
+  };
+
   return (
     <div 
       style={{
@@ -14,7 +22,7 @@ export default function Button({ text, link }) {
         border: 'none',
         textDecoration: 'none'
       }}
-      onClick={() => window.location.href = link}
+      onClick={handleClick}
       onMouseEnter={(e) => {
         e.target.style.background = 'var(--subcolor)';
         e.target.style.opacity = '0.9';

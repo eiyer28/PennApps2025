@@ -4,6 +4,7 @@
   --maincolor: #7aceb5;
   --subcolor: #ffd182;
   --textcolor: #142233;
+  --darkmaincolor: #67b0ab;
 }
 
 @media (prefers-color-scheme: dark) {

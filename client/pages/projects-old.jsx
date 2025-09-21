@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import Navbar from '../components/Navbar';
 import styles from '../styles/Search.module.css';
+import MenuBar from './menu-bar.jsx';
+import Button from './button.jsx';
 
-export default function Search() {
+export default function Projects() {
   const [countries, setCountries] = useState([]);
   const [methodologies, setMethodologies] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -239,8 +240,7 @@ export default function Search() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleButtonClick = () => {
     if (searchTimeout) clearTimeout(searchTimeout);
     performAPISearch();
   };
@@ -252,19 +252,19 @@ export default function Search() {
         <meta name="description" content="Search carbon offset projects" />
       </Head>
 
-      <Navbar />
+      <MenuBar/>
 
-      <div className={styles.container}>
+      <div className={styles.container} style={{paddingTop: '100px'}}>
         <header className={styles.header}>
-          <h1>Carbon Project Search</h1>
+          <h1 style={{color: 'var(--textcolor)'}}>Carbon Project Search</h1>
           <Link href="/">
-            <button className={styles.homeButton}>← Home</button>
+            <button className={styles.homeButton}>〈 Home</button>
           </Link>
         </header>
 
-        <form onSubmit={handleSubmit} className={styles.searchForm}>
+        <form className={styles.searchForm}>
           <div className={styles.formGroup}>
-            <label htmlFor="country">Country:</label>
+            <label htmlFor="country" style={{color: 'var(--textcolor)'}}>Country:</label>
             <div className={styles.selectContainer}>
               <select
                 id="country"
@@ -286,7 +286,7 @@ export default function Search() {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="methodology">Methodology:</label>
+            <label htmlFor="methodology" style={{color: 'var(--textcolor)'}}>Methodology:</label>
             <div className={styles.selectContainer}>
               <select
                 id="methodology"
@@ -308,7 +308,7 @@ export default function Search() {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="projectName">Project Name:</label>
+            <label htmlFor="projectName" style={{color: 'var(--textcolor)'}}>Project Name:</label>
             <input
               type="text"
               id="projectName"
@@ -319,125 +319,127 @@ export default function Search() {
             />
           </div>
 
-          <button type="submit" disabled={isLoading} className={styles.searchButton}>
-            {isLoading ? 'Searching...' : 'Search'}
-            {isLoading && <div className={styles.loader}></div>}
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'left', marginTop: '20px' }}>
+            <Button text={isLoading ? 'Searching...' : 'Search'} onClick={handleButtonClick} />
+          </div>
         </form>
+
+        {projects.length > 0 && (
+          <div 
+            style={{
+              padding: '20px', 
+              background: 'white', 
+              borderRadius: '8px', 
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)', 
+              marginBottom: '20px'
+            }}
+          >
+            <h3 style={{color: 'var(--textcolor)', margin: '0 0 10px 0'}}>
+              Found {hasMoreProjects ? `${totalProjects}+` : totalProjects} projects
+              {totalProjects > PROJECTS_PER_PAGE && (
+                <span className={styles.pageInfo} style={{color: 'var(--textcolor)'}}>
+                  {' '}(Page {currentPage} of {Math.ceil(totalProjects / PROJECTS_PER_PAGE)})
+                </span>
+              )}
+            </h3>
+            
+            {totalProjects > PROJECTS_PER_PAGE && (
+              <div className={styles.pagination}>
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className={styles.paginationButton}
+                >
+                  ← Previous
+                </button>
+                
+                <span className={styles.pageNumbers}>
+                  {Array.from({ length: Math.min(5, Math.ceil(totalProjects / PROJECTS_PER_PAGE)) }, (_, i) => {
+                    const startPage = Math.max(1, currentPage - 2);
+                    const pageNum = startPage + i;
+                    const maxPage = Math.ceil(totalProjects / PROJECTS_PER_PAGE);
+                    
+                    if (pageNum > maxPage) return null;
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`${styles.pageNumber} ${currentPage === pageNum ? styles.currentPage : ''}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </span>
+                
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalProjects / PROJECTS_PER_PAGE), prev + 1))}
+                  disabled={currentPage >= Math.ceil(totalProjects / PROJECTS_PER_PAGE)}
+                  className={styles.paginationButton}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className={styles.results}>
           {projects.length === 0 && !isLoading ? (
-            <p>No projects found.</p>
+            <p style={{color: 'var(--textcolor)'}}>No projects found.</p>
           ) : (
             <>
-              {projects.length > 0 && (
-                <div className={styles.resultsHeader}>
-                  <h3>
-                    Found {hasMoreProjects ? `${totalProjects}+` : totalProjects} projects
-                    {totalProjects > PROJECTS_PER_PAGE && (
-                      <span className={styles.pageInfo}>
-                        {' '}(Page {currentPage} of {Math.ceil(totalProjects / PROJECTS_PER_PAGE)})
+              {projects.map((project, index) => (
+                <div key={project.key || project.projectID || index} className={styles.projectItem}>
+                <div className={styles.projectHeader}>
+                  <div className={styles.projectName} style={{color: 'var(--textcolor)'}}>
+                    {project.name || 'Unnamed Project'}
+                  </div>
+                  {project.registry && (
+                    <div className={styles.certificationBadge}>
+                      <div className={styles.badgeIcon}>
+                        <span className={styles.checkmark}>✓</span>
+                        <div className={styles.logoPlaceholder}></div>
+                      </div>
+                      <span className={styles.badgeText}>
+                        {project.registry} Certified
                       </span>
-                    )}
-                  </h3>
-                  
-                  {totalProjects > PROJECTS_PER_PAGE && (
-                    <div className={styles.pagination}>
-                      <button 
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                        className={styles.paginationButton}
-                      >
-                        ← Previous
-                      </button>
-                      
-                      <span className={styles.pageNumbers}>
-                        {Array.from({ length: Math.min(5, Math.ceil(totalProjects / PROJECTS_PER_PAGE)) }, (_, i) => {
-                          const startPage = Math.max(1, currentPage - 2);
-                          const pageNum = startPage + i;
-                          const maxPage = Math.ceil(totalProjects / PROJECTS_PER_PAGE);
-                          
-                          if (pageNum > maxPage) return null;
-                          
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => setCurrentPage(pageNum)}
-                              className={`${styles.pageNumber} ${currentPage === pageNum ? styles.currentPage : ''}`}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        })}
-                      </span>
-                      
-                      <button 
-                        onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalProjects / PROJECTS_PER_PAGE), prev + 1))}
-                        disabled={currentPage >= Math.ceil(totalProjects / PROJECTS_PER_PAGE)}
-                        className={styles.paginationButton}
-                      >
-                        Next →
-                      </button>
                     </div>
                   )}
                 </div>
-              )}
-              {projects.map((project, index) => (
-                <Link 
-                  key={project.key || project.projectID || index} 
-                  href={`/project?id=${encodeURIComponent(project.key || project.projectID || index)}&name=${encodeURIComponent(project.name || 'Unnamed Project')}`}
-                  className={styles.projectItemLink}
-                >
-                  <div className={styles.projectItem}>
-                    <div className={styles.projectHeader}>
-                      <div className={styles.projectName}>
-                        {project.name || 'Unnamed Project'}
+                {project.country || project.methodologies ? (
+                  <div className={styles.projectDetails}>
+                    <div className={styles.detailRow} style={{color: 'var(--textcolor)'}}>
+                      <strong>Location:</strong> {project.country}{project.region ? `, ${project.region}` : ''}
+                    </div>
+                    {project.methodologies && project.methodologies.length > 0 && (
+                      <div className={styles.detailRow} style={{color: 'var(--textcolor)'}}>
+                        <strong>Category:</strong> {project.methodologies[0].category} ({project.methodologies[0].name})
                       </div>
-                    {project.registry && (
-                      <div className={styles.certificationBadge}>
-                        <div className={styles.badgeIcon}>
-                          <span className={styles.checkmark}>✓</span>
-                          <div className={styles.logoPlaceholder}></div>
-                        </div>
-                        <span className={styles.badgeText}>
-                          {project.registry} Certified
-                        </span>
+                    )}
+                    {project.price && (
+                      <div className={styles.detailRow} style={{color: 'var(--textcolor)'}}>
+                        <strong>Price:</strong> 
+                        {parseFloat(project.price) > 0 
+                          ? `$${project.price}` 
+                          : `$${project.price} (Not Currently Trading)`
+                        }
+                      </div>
+                    )}
+                    {project.stats && project.stats.totalSupply && (
+                      <div className={styles.detailRow} style={{color: 'var(--textcolor)'}}>
+                        <strong>Total Supply:</strong> {project.stats.totalSupply.toLocaleString()} tons CO₂
+                      </div>
+                    )}
+                    {project.projectID && (
+                      <div className={styles.detailRow} style={{color: 'var(--textcolor)'}}>
+                        <strong>Project ID:</strong> {project.projectID}
                       </div>
                     )}
                   </div>
-                  {project.country || project.methodologies ? (
-                    <div className={styles.projectDetails}>
-                      <div className={styles.detailRow}>
-                        <strong>Location:</strong> {project.country}{project.region ? `, ${project.region}` : ''}
-                      </div>
-                      {project.methodologies && project.methodologies.length > 0 && (
-                        <div className={styles.detailRow}>
-                          <strong>Category:</strong> {project.methodologies[0].category} ({project.methodologies[0].name})
-                        </div>
-                      )}
-                      {project.price && (
-                        <div className={styles.detailRow}>
-                          <strong>Price:</strong> 
-                          {parseFloat(project.price) > 0 
-                            ? `$${project.price}` 
-                            : `$${project.price} (Not Currently Trading)`
-                          }
-                        </div>
-                      )}
-                      {project.stats && project.stats.totalSupply && (
-                        <div className={styles.detailRow}>
-                          <strong>Total Supply:</strong> {project.stats.totalSupply.toLocaleString()} tons CO₂
-                        </div>
-                      )}
-                      {project.projectID && (
-                        <div className={styles.detailRow}>
-                          <strong>Project ID:</strong> {project.projectID}
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
-                </div>
-                </Link>
+                ) : null}
+              </div>
               ))}
             </>
           )}

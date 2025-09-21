@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import MenuBar from './menu-bar.jsx';
 import styles from '../styles/Search.module.css';
+import Button from './button.jsx';
 
 export default function Search() {
   const [countries, setCountries] = useState([]);
@@ -244,6 +246,11 @@ export default function Search() {
     performAPISearch();
   };
 
+  const handleButtonClick = () => {
+    if (searchTimeout) clearTimeout(searchTimeout);
+    performAPISearch();
+  };
+
   return (
     <>
       <Head>
@@ -251,7 +258,9 @@ export default function Search() {
         <meta name="description" content="Search carbon offset projects" />
       </Head>
 
-      <div className={styles.container}>
+      <MenuBar />
+
+      <div className={styles.container} style={{paddingTop: '100px'}}>
         <header className={styles.header}>
           <h1>Carbon Project Search</h1>
           <Link href="/">
@@ -316,10 +325,9 @@ export default function Search() {
             />
           </div>
 
-          <button type="submit" disabled={isLoading} className={styles.searchButton}>
-            {isLoading ? 'Searching...' : 'Search'}
-            {isLoading && <div className={styles.loader}></div>}
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'left', marginTop: '20px' }}>
+            <Button text={isLoading ? 'Searching...' : 'Search'} onClick={handleButtonClick} />
+          </div>
         </form>
 
         <div className={styles.results}>
@@ -380,11 +388,16 @@ export default function Search() {
                 </div>
               )}
               {projects.map((project, index) => (
-                <div key={project.key || project.projectID || index} className={styles.projectItem}>
-                  <div className={styles.projectHeader}>
-                    <div className={styles.projectName}>
-                      {project.name || 'Unnamed Project'}
-                    </div>
+                <Link 
+                  key={project.key || project.projectID || index} 
+                  href={`/project?id=${encodeURIComponent(project.key || project.projectID || index)}&name=${encodeURIComponent(project.name || 'Unnamed Project')}`}
+                  className={styles.projectItemLink}
+                >
+                  <div className={styles.projectItem}>
+                    <div className={styles.projectHeader}>
+                      <div className={styles.projectName}>
+                        {project.name || 'Unnamed Project'}
+                      </div>
                     {project.registry && (
                       <div className={styles.certificationBadge}>
                         <div className={styles.badgeIcon}>
@@ -429,6 +442,7 @@ export default function Search() {
                     </div>
                   ) : null}
                 </div>
+                </Link>
               ))}
             </>
           )}

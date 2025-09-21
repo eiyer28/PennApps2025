@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--maincolor);
   padding: 20px;
 }
 
@@ -22,11 +22,10 @@
 }
 
 .title {
-  font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--textcolor);
   margin-bottom: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: Helvetica;
 }
 
 .subtitle {
@@ -76,8 +75,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--maincolor);
 }
 
 .input::placeholder {
@@ -120,7 +118,7 @@
 }
 
 .submitButton {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background-color: var(--maincolor);
   color: white;
   border: none;
   padding: 14px 24px;
@@ -133,12 +131,11 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+  background-color: var(--subcolor);
 }
 
 .submitButton:active:not(:disabled) {
-  transform: translateY(0);
+  background-color: var(--maincolor);
 }
 
 .submitButton:disabled {
@@ -182,14 +179,14 @@
 }
 
 .link {
-  color: #3b82f6;
+  color: var(--maincolor);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .link:hover {
-  color: #1d4ed8;
+  color: var(--subcolor);
   text-decoration: underline;
 }
 

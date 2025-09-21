@@ -79,7 +79,7 @@ export default function MenuBar() {
       {/* Navigation Links */}
       <div style={navLinksStyle}>
         <Link 
-          href="/projects" 
+          href="/search" 
           style={menuItemStyle}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(0,0,0,0.1)';
