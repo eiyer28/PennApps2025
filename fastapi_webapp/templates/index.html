@@ -1,10 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Hello World</title>
+    <title>Carbon Project Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+        }
+
+        label {
+            display: block;
+            margin-top: 1em;
+        }
+
+        input,
+        select,
+        button {
+            margin-top: 0.5em;
+        }
+
+        #results {
+            margin-top: 2em;
+            white-space: pre-wrap;
+            background-color: #f5f5f5;
+            padding: 1em;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .project-item {
+            background-color: white;
+            margin: 0.5em 0;
+            padding: 1em;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .project-name {
+            font-weight: bold;
+            margin-bottom: 0.5em;
+        }
+
+        .project-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Loading spinner styles */
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #searchButton {
+            position: relative;
+        }
+
+        #searchButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Hello, world!</h1>
+    <h1>Search Carbon Projects</h1>
+    <form id="searchForm">
+        <label>
+            Country:
+            <select name="country" id="country">
+                <option value="">Loading countries...</option>
+            </select>
+            <div id="countryLoader" class="loader hidden"></div>
+        </label>
+        <label>
+            Methodology:
+            <select name="methodology" id="methodology">
+                <option value="">Loading methodologies...</option>
+            </select>
+            <div id="methodologyLoader" class="loader hidden"></div>
+        </label>
+        <label>
+            Project Name:
+            <input type="text" name="name" id="name" placeholder="Enter project name">
+        </label>
+        <button type="submit" id="searchButton">
+            Search
+            <div id="searchLoader" class="loader hidden"></div>
+        </button>
+    </form>
+    <div id="results"></div>
+    <script>
+        let cachedProjects = [];
+        let searchTimeout;
+
+        // Load countries on page load
+        async function loadCountries() {
+            const countryLoader = document.getElementById('countryLoader');
+            const countrySelect = document.getElementById('country');
+            
+            // Show loading spinner
+            countryLoader.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/search_countries');
+                const { countries } = await response.json();
+                console.log(countries);
+
+                // Clear loading message
+                countrySelect.innerHTML = '<option value="">Select a country</option>';
+
+                // Check if countries is an array before iterating
+                if (Array.isArray(countries)) {
+                    countries.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country;
+                        option.textContent = country;
+                        countrySelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Unexpected response format:', countries);
+                    countrySelect.innerHTML = '<option value="">Failed to load countries</option>';
+                }
+            } catch (error) {
+                console.error('Failed to load countries:', error);
+                countrySelect.innerHTML = '<option value="">Failed to load countries</option>';
+            } finally {
+                // Hide loading spinner
+                countryLoader.classList.add('hidden');
+            }
+        }
+
+        // Load methodologies on page load
+        async function loadMethodologies() {
+            const methodologyLoader = document.getElementById('methodologyLoader');
+            const methodologySelect = document.getElementById('methodology');
+            
+            // Show loading spinner
+            methodologyLoader.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/search_categories');
+                const { categories } = await response.json();
+                console.log(categories);
+
+                // Clear loading message
+                methodologySelect.innerHTML = '<option value="">Select a methodology</option>';
+
+                // Check if categories is an array before iterating
+                if (Array.isArray(categories)) {
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category;
+                        methodologySelect.appendChild(option);
+                    });
+                } else {
+                    console.error('Unexpected response format:', categories);
+                    methodologySelect.innerHTML = '<option value="">Failed to load methodologies</option>';
+                }
+            } catch (error) {
+                console.error('Failed to load methodologies:', error);
+                methodologySelect.innerHTML = '<option value="">Failed to load methodologies</option>';
+            } finally {
+                // Hide loading spinner
+                methodologyLoader.classList.add('hidden');
+            }
+        }
+
+        // Auto search when country or methodology changes
+        async function autoSearch() {
+            const country = document.getElementById('country').value;
+            const methodology = document.getElementById('methodology').value;
+            
+            // Only search if at least one filter is selected
+            if (!country && !methodology) {
+                cachedProjects = [];
+                displayProjects([]);
+                return;
+            }
+
+            const searchLoader = document.getElementById('searchLoader');
+            const resultsDiv = document.getElementById('results');
+            
+            // Show loading
+            searchLoader.classList.remove('hidden');
+            resultsDiv.textContent = 'Loading projects...';
+            
+            try {
+                const response = await fetch(`/search?country=${encodeURIComponent(country)}&methodology=${encodeURIComponent(methodology)}`);
+                const data = await response.json();
+                console.log(data);
+                
+                // Cache the full results - extract items array from response
+                cachedProjects = data.items || [];
+                
+                // Display top 10 lexicographically
+                const sortedProjects = [...cachedProjects].sort((a, b) => 
+                    (a.name || '').localeCompare(b.name || '')
+                );
+                displayProjects(sortedProjects.slice(0, 10));
+                
+            } catch (error) {
+                resultsDiv.textContent = 'Error: Failed to load projects';
+                console.error('Auto search failed:', error);
+            } finally {
+                searchLoader.classList.add('hidden');
+            }
+        }
+
+        // Display projects in a formatted way
+        function displayProjects(projects) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!projects || projects.length === 0) {
+                resultsDiv.innerHTML = '<p>No projects found.</p>';
+                return;
+            }
+
+            let html = `<h3>Found ${projects.length} projects:</h3>`;
+            projects.forEach(project => {
+                html += `
+                    <div class="project-item">
+                        <div class="project-name">${project.name || 'Unnamed Project'}</div>
+                        <div class="project-details">
+                            Country: ${project.country || 'N/A'} | 
+                            Category: ${project.category || 'N/A'} | 
+                            ID: ${project.id || 'N/A'}
+                        </div>
+                    </div>
+                `;
+            });
+            resultsDiv.innerHTML = html;
+        }
+
+        // Manual project name search
+        function searchByName() {
+            const nameInput = document.getElementById('name');
+            const searchTerm = nameInput.value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                // If empty, show the current auto-search results
+                const sortedProjects = [...cachedProjects].sort((a, b) => 
+                    (a.name || '').localeCompare(b.name || '')
+                );
+                displayProjects(sortedProjects.slice(0, 10));
+                return;
+            }
+
+            // First, search in cached results
+            const matchingProjects = cachedProjects.filter(project => 
+                (project.name || '').toLowerCase().includes(searchTerm)
+            );
+
+            if (matchingProjects.length > 0) {
+                // Found matches in cache, display them
+                const sortedMatches = matchingProjects.sort((a, b) => 
+                    (a.name || '').localeCompare(b.name || '')
+                );
+                displayProjects(sortedMatches.slice(0, 10));
+            } else {
+                // No matches in cache, wait 3s then do API search
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.textContent = 'No matches in current results. Searching again...';
+                
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(async () => {
+                    await performAPISearch();
+                }, 2000);
+            }
+        }
+
+        // Perform API search with name parameter
+        async function performAPISearch() {
+            const country = document.getElementById('country').value;
+            const methodology = document.getElementById('methodology').value;
+            const name = document.getElementById('name').value;
+            
+            const searchLoader = document.getElementById('searchLoader');
+            const resultsDiv = document.getElementById('results');
+            
+            searchLoader.classList.remove('hidden');
+            resultsDiv.textContent = 'Searching API...';
+            
+            try {
+                const response = await fetch(`/search?country=${encodeURIComponent(country)}&methodology=${encodeURIComponent(methodology)}&name=${encodeURIComponent(name)}`);
+                const data = await response.json();
+                
+                // Extract items array from response
+                const projects = data.items || [];
+                const sortedProjects = [...projects].sort((a, b) => 
+                    (a.name || '').localeCompare(b.name || '')
+                );
+                displayProjects(sortedProjects.slice(0, 10));
+                
+            } catch (error) {
+                resultsDiv.textContent = 'Error: Failed to search projects';
+                console.error('API search failed:', error);
+            } finally {
+                searchLoader.classList.add('hidden');
+            }
+        }
+
+        // Load dropdowns when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCountries();
+            loadMethodologies();
+        });
+
+        // Add event listeners for auto search
+        document.getElementById('country').addEventListener('change', autoSearch);
+        document.getElementById('methodology').addEventListener('change', autoSearch);
+
+        // Add event listener for manual name search (with debouncing)
+        document.getElementById('name').addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(searchByName, 500); // Debounce 500ms
+        });
+
+        // Handle form submission (prevent default, use existing search logic)
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            performAPISearch();
+        });
+    </script>
 </body>
+
 </html>
