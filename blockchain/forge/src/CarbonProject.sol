@@ -18,20 +18,22 @@ contract CarbonProject {
         address proposer;
         address beneficiary;
         address verifier;
+        string initative;
         string metadata_uri;
         State state;
         uint256 total_contributed;
-        uint256 deadline;
+        uint256 goal;
     }
 
     // Changed from immutable to regular state variables
     address public proposer;
     address public beneficiary;
     address public verifier;
+    string public initiative;
     string public metadata_uri;
-    uint256 public deadline;
-
+    uint256 public goal;
     State public state;
+
     uint256 public total_contributed;
     mapping(address => Contribution) public contributors;
     address[] private contributor_list;
@@ -48,17 +50,20 @@ contract CarbonProject {
         address _proposer,
         address _beneficiary,
         address _verifier,
+        string memory _initiative,
         string memory _metadata_uri,
-        uint256 _deadline
+        uint256 _goal
     ) external {
         require(proposer == address(0), "Already initialized");
         require(_beneficiary != address(0) && _verifier != address(0), "InvalidAddress");
+        require(_goal > 0, "Goal must be positive");
 
         proposer = _proposer;
         beneficiary = _beneficiary;
         verifier = _verifier;
+        initiative = _initiative;
         metadata_uri = _metadata_uri;
-        deadline = _deadline;
+        goal = _goal;
         state = State.Proposed;
     }
 
@@ -78,10 +83,10 @@ contract CarbonProject {
     function verify_and_release() external {
         require(state == State.Proposed, "AlreadyFinalized");
         require(msg.sender == verifier, "OnlyVerifier");
+        require(total_contributed >= goal, "Goal not reached");
 
         uint256 amount = total_contributed;
         state = State.Verified;
-        total_contributed = 0;
 
         emit Verified(msg.sender, amount, beneficiary);
 
@@ -135,10 +140,11 @@ contract CarbonProject {
             proposer: proposer,
             beneficiary: beneficiary,
             verifier: verifier,
+            initative: initiative,
             metadata_uri: metadata_uri,
             state: state,
             total_contributed: total_contributed,
-            deadline: deadline
+            goal: goal
         });
     }
 }

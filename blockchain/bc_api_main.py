@@ -1,11 +1,9 @@
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 import uvicorn
-from app.carbon_escrow import CarbonEscrowContract
+from carbon_escrow import CarbonEscrowContract
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List
 from web3 import Web3
 
 
@@ -42,11 +40,12 @@ class FundProjectRequest(BaseModel):
     amount: str  # Amount in ETH (will be converted to wei)
 
 class ProjectProposalRequest(BaseModel):
-    proposer_id: str
-    beneficiary_id: str
-    verifier_id: str
-    metadata_uri: str
-    deadline: int  # Unix timestamp
+    proposer_id: str # Crypto ID of proposer
+    beneficiary_id: str # Crypto ID of beneficiary
+    initiative: str # Name of initiative
+    verifier_id: str # Crypto ID of verifier
+    metadata_uri: str # URI of project metadata
+    goal: float  # Goal amount in ETH
 
 class VerifyRequest(BaseModel):
     verifier_id: str
@@ -56,31 +55,35 @@ class ProjectResponse(BaseModel):
     address: str
     proposer: str
     beneficiary: str
+    initiative: str
     verifier: str
     metadata_uri: str
     state: int
-    total_contributed: int  # in ETH
-    deadline: int
+    total_contributed: float  # in ETH
+    goal: float  # Goal amount in ETH
     contributors: List[dict]
 
 @app.post("/propose")
 async def propose(request: ProjectProposalRequest):
     """Create a new project contract"""
     try:
-
         proposer_addr = get_addr(request.proposer_id)
         beneficiary_addr = get_addr(request.beneficiary_id)
         verifier_addr = get_addr(request.verifier_id)
-
         proposer_pk = get_pk(request.proposer_id)
+
+        # Convert ETH goal to wei
+        goal_wei = w3.to_wei(request.goal, 'ether')
 
         tx = contract_handler.propose_project(
             beneficiary=beneficiary_addr,
             verifier=verifier_addr,
+            initiative=request.initiative,
             metadata_uri=request.metadata_uri,
-            deadline=request.deadline,
+            goal=goal_wei,
             from_address=proposer_addr,
         )
+
 
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=proposer_pk)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
@@ -111,7 +114,8 @@ async def fund(request: FundProjectRequest):
         return JSONResponse(content={"status": "success", "receipt": Web3.to_json(receipt)})
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-#
+
+
 @app.post("/verify")
 async def verify(request: VerifyRequest):
     """Verify a project and release funds"""
@@ -119,8 +123,14 @@ async def verify(request: VerifyRequest):
         project = contract_handler.get_project(request.project_address)
 
         verifier_addr = get_addr(request.verifier_id)
+        print(verifier_addr)
         verifier_pk = get_pk(request.verifier_id)
-        tx = project.verify(verifier_addr)
+
+        try:
+            tx = project.verify(verifier_addr)
+        except Exception as e:
+            print(e)
+
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=verifier_pk)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
@@ -154,10 +164,11 @@ async def get_project(project_address: str):
             proposer=details['proposer'],
             beneficiary=details['beneficiary'],
             verifier=details['verifier'],
+            initiative=details['initiative'],
             metadata_uri=details['metadata_uri'],
             state=details['state'],
             total_contributed=float(w3.from_wei(details['total_contributed'], 'ether')),
-            deadline=details['deadline'],
+            goal=float(w3.from_wei(details['goal'], 'ether')),
             contributors=contributor_details
         )
 
