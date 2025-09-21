@@ -4,7 +4,7 @@ import pymongo
 
 load_dotenv()
 
-mongodb_url = os.getenv("MONGODB_URL")
+mongodb_url = os.getenv("MONGODB_CONNECTION_STRING")
 print(f"Testing connection to: {mongodb_url[:50]}...")
 
 try:
