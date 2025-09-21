@@ -22,8 +22,7 @@ ARGS=(
 out=$(forge create "$CARBON_PROJ" \
   --broadcast \
   --rpc-url "$RPC_URL" \
-  --private-key "$PRIVATE_KEY" \
-  --constructor-args "${ARGS[@]}")
+  --private-key "$PRIVATE_KEY")
 
 DEPLOYED_TO=$(awk -F': ' '/^Deployed to:/ {print $2; exit}' <<<"$out")
 if [[ -z "$DEPLOYED_TO" ]]; then

@@ -14,12 +14,12 @@ contract CarbonProject {
         bool refunded;
     }
 
-    address public immutable immutable_proposer;
-    address public immutable immutable_beneficiary;
-    address public immutable immutable_verifier;
-    string public immutable_metadata_uri;
-    uint256 public immutable immutable_deadline;
-
+    // Changed from immutable to regular state variables
+    address public proposer;
+    address public beneficiary;
+    address public verifier;
+    string public metadata_uri;
+    uint256 public deadline;
 
     State public state;
     uint256 public total_contributed;
@@ -41,17 +41,14 @@ contract CarbonProject {
         string memory _metadata_uri,
         uint256 _deadline
     ) external {
-        require(immutable_proposer == address(0), "Already initialized"); // Prevent double initialization
+        require(proposer == address(0), "Already initialized");
         require(_beneficiary != address(0) && _verifier != address(0), "InvalidAddress");
 
-        // Initialize storage slots directly using assembly since we can't use constructor for proxies
-        assembly {
-            sstore(immutable_proposer.slot, _proposer)
-            sstore(immutable_beneficiary.slot, _beneficiary)
-            sstore(immutable_verifier.slot, _verifier)
-            sstore(immutable_metadata_uri.slot, _metadata_uri)
-            sstore(immutable_deadline.slot, _deadline)
-        }
+        proposer = _proposer;
+        beneficiary = _beneficiary;
+        verifier = _verifier;
+        metadata_uri = _metadata_uri;
+        deadline = _deadline;
         state = State.Proposed;
     }
 
@@ -70,23 +67,23 @@ contract CarbonProject {
 
     function verify_and_release() external {
         require(state == State.Proposed, "AlreadyFinalized");
-        require(msg.sender == immutable_verifier, "OnlyVerifier");
+        require(msg.sender == verifier, "OnlyVerifier");
 
         uint256 amount = total_contributed;
         state = State.Verified;
         total_contributed = 0;
 
-        emit Verified(msg.sender, amount, immutable_beneficiary);
+        emit Verified(msg.sender, amount, beneficiary);
 
         if (amount > 0) {
-            (bool success,) = immutable_beneficiary.call{value: amount}("");
+            (bool success,) = beneficiary.call{value: amount}("");
             require(success, "Transfer failed");
         }
     }
 
     function reject() external {
         require(state == State.Proposed, "AlreadyFinalized");
-        require(msg.sender == immutable_verifier, "OnlyVerifier");
+        require(msg.sender == verifier, "OnlyVerifier");
 
         state = State.Rejected;
         emit Rejected(msg.sender);
@@ -94,7 +91,7 @@ contract CarbonProject {
 
     function cancel(string calldata reason) external {
         require(state == State.Proposed, "AlreadyFinalized");
-        require(msg.sender == immutable_proposer, "OnlyProposer");
+        require(msg.sender == proposer, "OnlyProposer");
 
         state = State.Canceled;
         emit Canceled(msg.sender, reason);

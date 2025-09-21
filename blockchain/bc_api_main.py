@@ -26,7 +26,7 @@ app = FastAPI()
 w3 = Web3(Web3.HTTPProvider("http://localhost:8545"))
 
 # Contract addresses - to be updated after deployment
-FACTORY_ADDRESS = "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d"
+FACTORY_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 
 # Initialize factory contract handler
 contract_handler = CarbonEscrowContract(

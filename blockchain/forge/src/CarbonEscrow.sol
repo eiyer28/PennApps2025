@@ -27,6 +27,7 @@ contract CarbonEscrow {
     ) external returns (address) {
         address project = _createClone(implementation);
 
+        // Fix: Updated function signature to match CarbonProject.__init__
         (bool success,) = project.call(
             abi.encodeWithSignature(
                 "__init__(address,address,address,string,uint256)",
@@ -57,7 +58,6 @@ contract CarbonEscrow {
         return projects;
     }
 
-    // Internal minimal proxy creation function
     function _createClone(address target) internal returns (address result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
