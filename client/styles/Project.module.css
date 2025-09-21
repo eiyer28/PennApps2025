@@ -19,7 +19,7 @@
   width: 50px;
   height: 50px;
   border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid white;
+  border-top: 4px solid #7aceb5;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -236,7 +236,7 @@
 }
 
 .expandButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7aceb5 0%, #5bb89e 100%);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -246,12 +246,12 @@
   cursor: pointer;
   margin-top: 15px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgba(122, 206, 181, 0.3);
 }
 
 .expandButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(122, 206, 181, 0.4);
 }
 
 .expandButton:active {

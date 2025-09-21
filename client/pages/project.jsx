@@ -276,14 +276,6 @@ const ProjectDetails = () => {
               </div>
             </div>
           )}
-
-          {/* Debug Information */}
-          <div className={styles.debugInfo}>
-            <h4>Debug Information:</h4>
-            <p><strong>Project ID:</strong> {projectData?.projectID || id || 'Not provided'}</p>
-            <p><strong>Project Name:</strong> {projectData?.name || (name ? decodeURIComponent(name) : 'Not provided')}</p>
-            <p><strong>API Response Keys:</strong> {projectData ? Object.keys(projectData).join(', ') : 'No data'}</p>
-          </div>
         </div>
       </div>
       </div>
