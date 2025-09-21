@@ -44,18 +44,19 @@ class CarbonProjectContract:
             'proposer': self.contract.functions.proposer().call(),
             'beneficiary': self.contract.functions.beneficiary().call(),
             'verifier': self.contract.functions.verifier().call(),
+            'initiative': self.contract.functions.initiative().call(),
             'metadata_uri': self.contract.functions.metadata_uri().call(),
             'state': self.contract.functions.state().call(),
             'total_contributed': self.contract.functions.total_contributed().call(),
-            'deadline': self.contract.functions.deadline().call()
+            'goal': self.contract.functions.goal().call()
         }
 
     def get_contributors(self) -> List[str]:
         """Get list of all contributors"""
         return self.contract.functions.get_contributors().call()
 
-    def get_contribution(self, contributor: str) -> int:
-        """Get contribution amount for an address"""
+    def get_contribution(self, contributor: str) -> tuple[int, bool]:
+        """Get contribution amount and refund status for an address"""
         return self.contract.functions.get_contribution(contributor).call()
 
 class CarbonEscrowContract:
@@ -89,8 +90,9 @@ class CarbonEscrowContract:
         self,
         beneficiary: str,
         verifier: str,
+        initiative: str,
         metadata_uri: str,
-        deadline: int,
+        goal: int,
         from_address: str
     ) -> Dict[str, Any]:
         """Deploy a new project contract"""
@@ -100,8 +102,9 @@ class CarbonEscrowContract:
         transaction = self.contract.functions.propose_project(
             beneficiary,
             verifier,
+            initiative,
             metadata_uri,
-            deadline
+            goal
         ).build_transaction({
             'from': from_address,
             'gas': 5000000,  # Higher gas limit for contract deployment

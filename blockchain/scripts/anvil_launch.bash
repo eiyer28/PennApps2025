@@ -1,1 +1,1 @@
-anvil -m 'test test test test test test test test test test test junk' --print-traces
+anvil -m 'test test test test test test test test test test test junk' 
