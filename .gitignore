@@ -6,3 +6,6 @@ venv
 /node_modules
 **/__pycache__/
 client/nul
+*.pyc
+client/nul
+/blockchain/test_accounts.env
