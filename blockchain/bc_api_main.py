@@ -26,7 +26,7 @@ app = FastAPI()
 w3 = Web3(Web3.HTTPProvider("http://localhost:8545"))
 
 # Contract addresses - to be updated after deployment
-FACTORY_ADDRESS = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+FACTORY_ADDRESS = "0x68B1D87F95878fE05B998F19b66F4baba5De1aed"
 
 # Initialize factory contract handler
 contract_handler = CarbonEscrowContract(
@@ -37,7 +37,7 @@ contract_handler = CarbonEscrowContract(
 )
 
 class FundProjectRequest(BaseModel):
-    user_address: str
+    user_id: str
     project_address: str
     amount: str  # Amount in ETH (will be converted to wei)
 
@@ -49,7 +49,7 @@ class ProjectProposalRequest(BaseModel):
     deadline: int  # Unix timestamp
 
 class VerifyRequest(BaseModel):
-    verifier_address: str
+    verifier_id: str
     project_address: str
 
 class ProjectResponse(BaseModel):
@@ -59,7 +59,7 @@ class ProjectResponse(BaseModel):
     verifier: str
     metadata_uri: str
     state: int
-    total_contributed: str  # in ETH
+    total_contributed: int  # in ETH
     deadline: int
     contributors: List[dict]
 
@@ -81,7 +81,6 @@ async def propose(request: ProjectProposalRequest):
             deadline=request.deadline,
             from_address=proposer_addr,
         )
-        print(tx)
 
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=proposer_pk)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
@@ -90,64 +89,82 @@ async def propose(request: ProjectProposalRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 #
-# @app.post("/fund")
-# async def fund(request: FundProjectRequest):
-#     """Fund an existing project"""
-#     try:
-#         project = contract_handler.get_project(request.project_address)
-#         amount_wei = w3.to_wei(request.amount, 'ether')
-#         tx = project.fund(
-#             from_address=request.user_address,
-#             amount=amount_wei
-#         )
-#         return JSONResponse(content={"status": "success", "transaction": tx})
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
+@app.post("/fund")
+async def fund(request: FundProjectRequest):
+    """Fund an existing project"""
+    try:
+        project = contract_handler.get_project(request.project_address)
+        amount_wei = w3.to_wei(request.amount, 'ether')
+        funder_addr = get_addr(request.user_id)
+
+        tx = project.fund(
+            from_address=funder_addr,
+            amount=amount_wei
+        )
+
+        user_pk = get_pk(request.user_id)
+
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key=user_pk)
+
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        return JSONResponse(content={"status": "success", "receipt": Web3.to_json(receipt)})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 #
-# @app.post("/verify")
-# async def verify(request: VerifyRequest):
-#     """Verify a project and release funds"""
-#     try:
-#         project = contract_handler.get_project(request.project_address)
-#         tx = project.verify(request.verifier_address)
-#         return JSONResponse(content={"status": "success", "transaction": tx})
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
+@app.post("/verify")
+async def verify(request: VerifyRequest):
+    """Verify a project and release funds"""
+    try:
+        project = contract_handler.get_project(request.project_address)
+
+        verifier_addr = get_addr(request.verifier_id)
+        verifier_pk = get_pk(request.verifier_id)
+        tx = project.verify(verifier_addr)
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key=verifier_pk)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+
+        return JSONResponse(content={"status": "success", "receipt": Web3.to_json(receipt)})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 #
-# @app.get("/project/{project_address}")
-# async def get_project(project_address: str):
-#     """Get project details and contributors"""
-#     try:
-#         project = contract_handler.get_project(project_address)
-#         details = project.get_details()
-#         contributors = project.get_contributors()
-#
-#         # Add contribution amounts for each contributor
-#         contributor_details = []
-#         for addr in contributors:
-#             amount = project.get_contribution(addr)
-#             contributor_details.append({
-#                 "address": addr,
-#                 "amount": w3.from_wei(amount, 'ether')
-#             })
-#
-#         # Convert wei amounts to ETH for display
-#         response = ProjectResponse(
-#             address=project_address,
-#             proposer=details['proposer'],
-#             beneficiary=details['beneficiary'],
-#             verifier=details['verifier'],
-#             metadata_uri=details['metadata_uri'],
-#             state=details['state'],
-#             total_contributed=w3.from_wei(details['total_contributed'], 'ether'),
-#             deadline=details['deadline'],
-#             contributors=contributor_details
-#         )
-#
-#         return JSONResponse(content={"status": "success", "project": response.dict()})
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
-#
+@app.get("/project/{project_address}")
+async def get_project(project_address: str):
+    """Get project details and contributors"""
+    try:
+        project = contract_handler.get_project(project_address)
+        details = project.get_details()
+
+        contributors = project.get_contributors()
+
+        # Add contribution amounts for each contributor
+        contributor_details = []
+        for addr in contributors:
+            amount, refunded = project.get_contribution(addr)
+            contributor_details.append({
+                "address": addr,
+                "amount": float(w3.from_wei(amount, 'ether')),
+                "refunded": refunded
+            })
+
+        # Convert wei amounts to ETH for display
+        response = ProjectResponse(
+            address=project_address,
+            proposer=details['proposer'],
+            beneficiary=details['beneficiary'],
+            verifier=details['verifier'],
+            metadata_uri=details['metadata_uri'],
+            state=details['state'],
+            total_contributed=float(w3.from_wei(details['total_contributed'], 'ether')),
+            deadline=details['deadline'],
+            contributors=contributor_details
+        )
+
+        return JSONResponse(content={"status": "success", "project": response.dict()})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @app.get("/projects")
 async def list_projects():
     """Get all deployed project addresses"""

@@ -14,6 +14,16 @@ contract CarbonProject {
         bool refunded;
     }
 
+    struct ProjectDetails {
+        address proposer;
+        address beneficiary;
+        address verifier;
+        string metadata_uri;
+        State state;
+        uint256 total_contributed;
+        uint256 deadline;
+    }
+
     // Changed from immutable to regular state variables
     address public proposer;
     address public beneficiary;
@@ -113,5 +123,22 @@ contract CarbonProject {
 
     function get_contributors() external view returns (address[] memory) {
         return contributor_list;
+    }
+
+    function get_contribution(address user) external view returns (uint256 amount, bool refunded) {
+        Contribution memory contribution = contributors[user];
+        return (contribution.amount, contribution.refunded);
+    }
+
+    function get_details() external view returns (ProjectDetails memory) {
+        return ProjectDetails({
+            proposer: proposer,
+            beneficiary: beneficiary,
+            verifier: verifier,
+            metadata_uri: metadata_uri,
+            state: state,
+            total_contributed: total_contributed,
+            deadline: deadline
+        });
     }
 }

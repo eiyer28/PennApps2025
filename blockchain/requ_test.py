@@ -31,7 +31,7 @@ def create_proposal() -> str:
 
     print("\nCreating new project proposal...")
     resp = requests.post(f"{API_URL}/propose", json=payload)
-    print("Response:", resp.json())
+    print("Response:", resp.json()["status"])
 
 
     # For now, we'll get the project address from the /projects endpoint
@@ -52,27 +52,27 @@ def fund_project(project_address: str, amount_eth: float):
         amount_eth: Amount to contribute in ETH
     """
     payload = {
-        "user_address": FUNDER_ADDRESS,
+        "user_id": FUNDER_ACCNAME,
         "project_address": project_address,
         "amount": str(amount_eth)  # API expects string for proper decimal handling
     }
 
     print(f"\nFunding project {project_address} with {amount_eth} ETH...")
     resp = requests.post(f"{API_URL}/fund", json=payload)
-    print("Response:", resp.json())
+    print("Response:", resp.json()["status"])
     return resp.json()
 
 
 def verify_project(project_address: str):
     """Verify a project and release funds"""
     payload = {
-        "verifier_address": VERIFIER_ADDRESS,
+        "verifier_id": VERIFIER_ACCNAME,
         "project_address": project_address
     }
 
     print(f"\nVerifying project {project_address}...")
     resp = requests.post(f"{API_URL}/verify", json=payload)
-    print("Response:", resp.json())
+    print("Response:", resp.json()["status"])
     return resp.json()
 
 
