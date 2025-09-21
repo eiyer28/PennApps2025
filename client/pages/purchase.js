@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import Navbar from '../components/Navbar';
+import MenuBar from './menu-bar.jsx';
 import styles from '../styles/Purchase.module.css';
 
 const Purchase = () => {
@@ -57,16 +57,16 @@ const Purchase = () => {
         
         setAuthChecked(true);
       } else {
-        // No user found, redirect to login
+        // Re-enabled - No user found, redirect to login
         router.push('/login?message=Please log in to access the purchase page.');
         return;
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      // Re-enabled - redirect to login on error
       router.push('/login?message=Please log in to access the purchase page.');
       return;
     }
-    setAuthChecked(true);
   }, [router]);
 
   // Fetch project data
@@ -503,7 +503,7 @@ const Purchase = () => {
 
   return (
     <div className={styles.container}>
-      <Navbar />
+      <MenuBar />
       <div className={styles.header}>
         <Link href={`/project?id=${encodeURIComponent(id || '')}&name=${encodeURIComponent(name || '')}`} className={styles.backButton}>
           ← Back to Project
@@ -533,7 +533,7 @@ const Purchase = () => {
 
               {/* Quantity Input - Main Focus */}
               <div className={styles.quantitySection}>
-                <h3>📊 Order Calculator</h3>
+                              <h3>Project Information</h3>
                 
                 {/* Current Price Display */}
                 <div className={styles.priceTicket}>
@@ -731,7 +731,7 @@ const Purchase = () => {
                   disabled={!isBasicQuoteReady() || quoteLoading}
                   onClick={handleBeginPurchase}
                 >
-                  {quoteLoading ? '⏳ Getting Quote...' : '� Begin Purchase'}
+                  {quoteLoading ? '⏳ Getting Quote...' : 'Begin Purchase'}
                 </button>
                 )}
 
@@ -756,21 +756,8 @@ const Purchase = () => {
           {/* Right Column - Project Information Dashboard */}
           <div className={styles.infoSection}>
             <div className={styles.infoDashboard}>
-              <h3>� Project Information</h3>
+              <h3> Project Information</h3>
               
-              {/* Quick Overview */}
-              {projectData?.description && (
-                <div className={styles.infoCard}>
-                  <h4>Project Overview</h4>
-                  <p className={styles.infoDescription}>
-                    {projectData.description.length > 150 
-                      ? projectData.description.substring(0, 150) + '...'
-                      : projectData.description
-                    }
-                  </p>
-                </div>
-              )}
-
               {/* Location & Methodology */}
               <div className={styles.infoCard}>
                 <h4>🌍 Location & Methodology</h4>
@@ -829,25 +816,6 @@ const Purchase = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Debug Information */}
-        <div className={styles.debugInfo}>
-          <h4>Debug Information:</h4>
-          <p><strong>Project ID:</strong> {projectData?.key || id || 'Not provided'}</p>
-          <p><strong>Project Name:</strong> {projectData?.name || (name ? decodeURIComponent(name) : 'Not provided')}</p>
-          <p><strong>Estimated Current Price:</strong> ${projectData?.price || 'N/A'}</p>
-          <p><strong>Last Updated:</strong> {lastUpdated ? lastUpdated.toLocaleString() : 'Never'}</p>
-          <p><strong>Input Mode:</strong> {inputMode}</p>
-          <p><strong>Quantity (tons):</strong> {quantity || 'None'}</p>
-          <p><strong>USD Amount:</strong> {usdAmount || 'None'}</p>
-          <p><strong>Effective Quantity:</strong> {getEffectiveQuantity().toFixed(2)} tons</p>
-          <p><strong>Certificate Name:</strong> {certificateFirstName} {certificateLastName}</p>
-          <p><strong>Retirement Message:</strong> {retirementMessage || 'None'}</p>
-          <p><strong>Order Ready:</strong> {isOrderReady() ? 'Yes' : 'No'}</p>
-          {isOrderReady() && (
-            <p><strong>Retirement Data:</strong> {JSON.stringify(getRetirementData(), null, 2)}</p>
-          )}
         </div>
 
         {/* Quote Modal */}

@@ -117,9 +117,9 @@ export default function LearnMore() {
               Ready to Make an Impact?
             </h2>
             <p style={{fontSize: '1.1rem', marginBottom: '30px', color: 'var(--textcolor)'}}>
-              Join thousands of individuals and organizations who are already making a difference.
+              Explore our verified projects and start offsetting your carbon footprint today.
             </p>
-            <Button text="Get Started" link="/projects" />
+            <Button text="Get Started" link="/search" />
           </div>
         </div>
       </div>
