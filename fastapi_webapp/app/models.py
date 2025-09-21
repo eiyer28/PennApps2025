@@ -89,6 +89,12 @@ class PurchaseConfirmationRequest(BaseModel):
     
     # User info
     userId: Optional[str] = None
+    
+    # Project data (for blockchain save)
+    projectId: Optional[str] = None
+    projectName: Optional[str] = None
+    projectUrl: Optional[str] = None
+    projectRegistry: Optional[str] = None
 
 # Order execution models for Carbonmark API
 class OrderItem(BaseModel):
@@ -159,6 +165,7 @@ class OrderHistory(BaseModel):
     order_status: str = "completed"
     created_at: datetime
     carbonmark_response: Optional[Dict[str, Any]] = None  # Store full Carbonmark response
+    sources: Optional[List[AssetSource]] = None  # Store selected sources for blockchain
     
     model_config = ConfigDict(
         populate_by_name=True,

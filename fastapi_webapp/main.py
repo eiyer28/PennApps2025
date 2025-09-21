@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 
 # Import our modules
-from app.database import connect_to_mongo, close_mongo_connection, save_order_to_history, get_user_orders
+from app.database import connect_to_mongo, close_mongo_connection, save_order_to_history, get_user_orders, get_user_by_id
 from app.models import (
     UserSignup, UserLogin, UserResponse, PurchaseRequest, PurchaseConfirmationRequest, 
     PurchaseResponse, AssetSource, SupplierSelection, OrderItem, RetirementDetails,
@@ -724,7 +724,15 @@ async def execute_purchase(confirmation_request: PurchaseConfirmationRequest):
         print(f"Certificate: {confirmation_request.certificateFirstName} {confirmation_request.certificateLastName}")
         print(f"Message: {confirmation_request.retirementMessage}")
         print(f"User: {confirmation_request.userId}")
+
+        # Extract project information from request
+        project_id = confirmation_request.projectId
+        project_name = confirmation_request.projectName
+        project_url = confirmation_request.projectUrl
+        project_registry = confirmation_request.projectRegistry
         
+        print(f"Project details: ID={project_id}, Name={project_name}, URL={project_url}, Registry={project_registry}")
+
         # Validate the confirmation request
         if not confirmation_request.certificateFirstName.strip() or not confirmation_request.certificateLastName.strip():
             raise HTTPException(status_code=400, detail="Certificate name is required")
@@ -930,19 +938,31 @@ async def execute_purchase(confirmation_request: PurchaseConfirmationRequest):
                 "quote_id": confirmation_request.quoteId,
                 "carbonmark_quote_id": stored_quote.carbonmarkQuoteId,
                 "project_id": stored_quote.projectId,
-                "project_name": None,  # We can add this if we store project names
+                "project_name": project_name,  # Use project name from request
                 "quantity": stored_quote.quantity,
                 "total_cost": stored_quote.totalCost,
                 "certificate_name": full_certificate_name,
                 "retirement_message": confirmation_request.retirementMessage.strip(),
                 "order_status": carbonmark_order.orderStatus,
                 "created_at": datetime.utcnow(),
-                "carbonmark_response": carbonmark_data  # Store the full Carbonmark response
+                "carbonmark_response": carbonmark_data,  # Store the full Carbonmark response
+                "sources": stored_quote.selectedSources  # Add sources for blockchain save
             }
             
             # Save to database
             history_id = await save_order_to_history(order_history_data)
             print(f"Order saved to history with ID: {history_id}")
+
+            # Save to blockchain with project data
+            blockchain_record = await save_order_to_blockchain(
+                order_history_data, 
+                project_id, 
+                project_name, 
+                project_url, 
+                project_registry,
+                confirmation_request.userId
+            )
+            print(f"Order saved to blockchain: {blockchain_record}")
             
         except Exception as save_error:
             # Don't fail the order if we can't save to history
@@ -968,6 +988,7 @@ async def execute_purchase(confirmation_request: PurchaseConfirmationRequest):
                 "orderStatus": carbonmark_order.orderStatus,
                 "createdAt": carbonmark_order.createdAt,
                 "sourceCount": len(stored_quote.selectedSources),
+                "sources": stored_quote.selectedSources,
                 "executionTimestamp": datetime.utcnow().isoformat()
             },
             carbonmarkOrder=carbonmark_order
@@ -987,6 +1008,56 @@ async def execute_purchase(confirmation_request: PurchaseConfirmationRequest):
             status_code=500, 
             detail=f"An error occurred while executing the purchase: {str(e)}"
         )
+
+async def save_order_to_blockchain(order_data: dict, project_id: str, project_name: str, project_url: str, project_registry: str, user_id: str):
+    """
+    Save order data to blockchain with proper user email lookup
+    """
+    try:
+        # Get user details from database to extract email
+        user = await get_user_by_id(user_id)
+        proposer_email = user.get('email', 'unknown@email.com') if user else user_id
+        
+        print(f"Blockchain save - User lookup: {user_id} -> {proposer_email}")
+        
+        # Get supplier names from selected sources for beneficiary_id
+        sources = order_data.get("sources", [])
+        if isinstance(sources, list) and len(sources) > 0:
+            # Use the first supplier's pool name or source ID
+            first_source = sources[0]
+            if hasattr(first_source, 'poolName') and first_source.poolName:
+                beneficiary_id = first_source.poolName
+            elif hasattr(first_source, 'sourceId'):
+                beneficiary_id = first_source.sourceId
+            else:
+                beneficiary_id = "UNKNOWN_SUPPLIER"
+        else:
+            beneficiary_id = "UNKNOWN_SUPPLIER"
+        
+        # Create blockchain record with proper data
+        order_record = {
+            "proposer_id": proposer_email,  # User's email from database
+            "beneficiary_id": beneficiary_id,  # Supplier pool/source name
+            "verifier_id": project_registry or "Unknown Registry",
+            "initiative": project_name or "Unknown Project",
+            "metadata_uri": project_url or "https://dayof.pennapps.com/",
+            "goal": float(order_data.get("quantity", 0))  # Convert to float
+        }
+        
+        print(f"Blockchain record created: {order_record}")
+        return order_record
+        
+    except Exception as e:
+        print(f"Error creating blockchain record: {e}")
+        # Return fallback record
+        return {
+            "proposer_id": user_id or "UNKNOWN_USER",
+            "beneficiary_id": "UNKNOWN_SUPPLIER", 
+            "verifier_id": project_registry or "Unknown Registry",
+            "initiative": project_name or "Unknown Project",
+            "metadata_uri": project_url or "https://dayof.pennapps.com/",
+            "goal": 0.0
+        }
 
 # --- ORDER HISTORY ENDPOINT ---
 @app.get("/orders/{user_id}")
