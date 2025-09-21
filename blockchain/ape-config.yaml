@@ -1,0 +1,10 @@
+name: carbonchain
+foundry:
+  host: http://localhost:8545
+
+plugins:
+  - name: foundry
+  - name: solidity
+compile:
+  output_extra:
+     - ABI
