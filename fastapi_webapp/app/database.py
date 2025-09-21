@@ -20,7 +20,8 @@ async def get_database():
 
 async def connect_to_mongo():
     """Create database connection - tries MongoDB Atlas first, falls back to in-memory"""
-    mongodb_url = os.getenv("MONGODB_URL")
+    # Use MONGODB_CONNECTION_STRING for Atlas connection
+    mongodb_url = os.getenv("MONGODB_CONNECTION_STRING")
 
     # Try MongoDB Atlas first
     if mongodb_url:
@@ -57,3 +58,35 @@ async def close_mongo_connection():
             print("Disconnected from fallback database")
         else:
             print("Disconnected from MongoDB Atlas")
+
+async def save_order_to_history(order_data: dict):
+    """Save completed order to order history collection"""
+    try:
+        database = await get_database()
+        orders_collection = database.order_history
+        
+        # Insert the order record
+        result = await orders_collection.insert_one(order_data)
+        print(f"Order saved to history with ID: {result.inserted_id}")
+        return str(result.inserted_id)
+        
+    except Exception as e:
+        print(f"Error saving order to history: {e}")
+        # Don't fail the order if we can't save to history
+        return None
+
+async def get_user_orders(user_id: str):
+    """Get all orders for a specific user"""
+    try:
+        database = await get_database()
+        orders_collection = database.order_history
+        
+        # Find all orders for this user, sorted by creation date (newest first)
+        cursor = orders_collection.find({"user_id": user_id}).sort("created_at", -1)
+        orders = await cursor.to_list(length=None)
+        
+        return orders
+        
+    except Exception as e:
+        print(f"Error fetching user orders: {e}")
+        return []

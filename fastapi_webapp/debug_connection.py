@@ -6,7 +6,7 @@ import dns.resolver
 
 load_dotenv()
 
-mongodb_url = os.getenv("MONGODB_URL")
+mongodb_url = os.getenv("MONGODB_CONNECTION_STRING")
 print(f"Testing connection to Atlas...")
 
 # Try different connection strategies
