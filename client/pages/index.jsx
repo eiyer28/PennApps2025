@@ -33,6 +33,7 @@ export default function Home() {
   const cloud6 = useRef(null);
   const cloud7 = useRef(null);
   const cloud8 = useRef(null);
+  const cloud9 = useRef(null);
 
   const container = useRef(null);
 
@@ -46,7 +47,8 @@ export default function Home() {
         { ref: cloud5, name: 'cloud5', y: 120, rotation: 8 },
         { ref: cloud6, name: 'cloud6', y: 90, rotation: -8 },
         { ref: cloud7, name: 'cloud7', y: 40, rotation: 4 },
-        { ref: cloud8, name: 'cloud8', y: 60, rotation: -4 }
+        { ref: cloud8, name: 'cloud8', y: 60, rotation: -4 },
+        { ref: cloud9, name: 'cloud9', y: 150, rotation: 6 }
       ];
 
       cloudRefs.forEach(cloud => {
@@ -86,11 +88,11 @@ export default function Home() {
             <Image src="/assets/logo-with-white.svg" width={100} height={100} style={{marginBottom: '20px'}}/>
             <h1 className={styles.title}>
               Offset your carbon footprint, <br />
-              know you're having an impact
+              know <span className={styles.highlightText}>where your money is going</span>
             </h1>
-            <div style={{paddingTop: "px"}}>
-              <p className={styles.landingbody}>
-              Let's get started
+            <div style={{paddingTop: "10px"}}>
+              <p className={styles.landingbody} style={{fontSize: "24px"}}>
+              Let's get started!
               </p>
             </div>
           </div>
@@ -104,7 +106,7 @@ export default function Home() {
                 type="solid"
               />
             </div>
-            <div ref={cloud2} style={{position: 'absolute', top: '30%', right: '40%'}}>
+            <div ref={cloud2} style={{position: 'absolute', top: '30%', right: '35%'}}>
               <Cloud 
                 width={300} 
                 height={300}
@@ -132,14 +134,14 @@ export default function Home() {
                 type="outline"
               />
             </div>
-            <div ref={cloud6} style={{position: 'absolute', top: '100%', left: '20%'}}>
+            <div ref={cloud6} style={{position: 'absolute', top: '110%', left: '20%'}}>
               <Cloud 
-                width={200} 
-                height={200}
+                width={250} 
+                height={250}
                 type="outline"
               />
             </div>
-            <div ref={cloud7} style={{position: 'absolute', top: '140%', right: '200px'}}>
+            <div ref={cloud7} style={{position: 'absolute', top: '135%', right: '200px'}}>
               <Cloud 
                 width={100} 
                 height={100}
@@ -153,7 +155,7 @@ export default function Home() {
                 type="solid"
               />
             </div>
-            <div style={{position: 'absolute', top: '155%', left: '1%'}}>
+            <div ref={cloud9} style={{position: 'absolute', top: '150%', left: '3%'}}>
               <Cloud 
                 width={300} 
                 height={300}
@@ -163,42 +165,44 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={styles.fullsection}>
-          <h2 className={styles.subtitle} style={{marginBottom: '20px'}}>
-            About us
-          </h2>
-          <p className={styles.landingbody} style={{textAlign: 'center'}}>
-            Those with the money that can fund sustainable development 
-            are not being connected with the people and places that are 
-            engineering the solutions that can meaningfully affect our 
-            own carbon output and our own development of our cities and 
-            societies. <br></br> <br></br>
+        <div className={styles.fullsection} style={{position: 'relative', zIndex: 2}}>
+          <Card 
+            height="auto"
+            width="700px"
+            title={<span className={styles.highlightText}>Our Purpose</span>}
+            content={
+              <>
+                Those with the money that can fund sustainable development 
+                are not being connected with the people and places that are 
+                engineering the solutions that can <em>meaningfully affect</em> our 
+                own carbon output and our own development of our cities and 
+                societies. <br></br> <br></br>
 
-            We aim to solve this problem by creating a platform that utilizes
-            blockchain as a regulatory structure to ensure traceability 
-            and completion of these projects. 
-          </p>
-
+                We aim to solve this problem by creating a platform that <em>utilizes
+                blockchain</em> as a regulatory structure to ensure <em>traceability</em> 
+                and <em>transparency</em> of these projects.
+              </>
+            }
+            showBorder={true}
+            titleFontSize="24px"
+            contentFontSize="18px"
+            padding="30px"
+          />
         </div>
 
         <div className={styles.fullsection} style={{backgroundColor: 'var(--maincolor)'}}>
           <h2 className={styles.subtitle}>
-            Start here, start now
+            <span className={styles.highlightText}>Start here, start now</span>
           </h2>
           <div className={styles.cardgrids}>
             <Card 
-            height="350px"
+            height="500px"
             width="400px"
             title="Buy Carbon Offsets"
-            content="Browse possible projects to support and offset your carbon footprint, starting as small as a few cents."
+            content="Browse verified projects to support and offset your carbon footprint, starting as small as a few cents."
+            image="/assets/yzy.jpg"
             link="/projects"
-            />
-            <Card 
-              height="350px"
-              width="400px"
-              title="Supply Projects"
-              content="Support verified sustainable development projects around the world."
-              link="/supply-projects"
+            showBorder={false}
             />
           </div>
         </div>

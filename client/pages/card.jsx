@@ -1,4 +1,17 @@
-export default function Card({ height, width, title, content, image, link }) {
+import Image from 'next/image';
+
+export default function Card({ 
+  height, 
+  width, 
+  title, 
+  content, 
+  image, 
+  link, 
+  showBorder = false, 
+  titleFontSize = '1.2rem', 
+  contentFontSize = '0.9rem',
+  padding = '16px'
+}) {
   const handleClick = () => {
     if (link) {
       window.location.href = link;
@@ -9,14 +22,15 @@ export default function Card({ height, width, title, content, image, link }) {
     ...(width && { width }),
     ...(height && { height }),
     borderRadius: '8px',
-    padding: '16px',
+    padding: '0',
     cursor: link ? 'pointer' : 'default',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
     transition: 'transform 0.2s, box-shadow 0.2s',
     backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between'
+    overflow: 'hidden',
+    ...(showBorder && { border: '1px solid #e0e0e0' })
   };
 
   const hoverStyle = link ? {
@@ -43,12 +57,37 @@ export default function Card({ height, width, title, content, image, link }) {
         }
       }}
     >
-      <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: '#333' }}>
-        {title}
-      </h3>
-      <p style={{ margin: 0, color: 'var(--textcolor)', lineHeight: '1.4' }}>
-        {content}
-      </p>
+      {image && (
+        <div style={{ 
+          height: '70%', 
+          width: '100%', 
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <Image 
+            src={image}
+            alt={title}
+            fill
+            style={{ objectFit: 'cover' }}
+          />
+        </div>
+      )}
+      <div style={{ 
+        padding: padding, 
+        height: '30%',
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center',
+        gap: '8px', 
+        textAlign: 'center' 
+      }}>
+        <h2 style={{ margin: 0, fontSize: titleFontSize, color: 'var(--textcolor)' }}>
+          {title}
+        </h2>
+        <p style={{ margin: 0, color: 'var(--textcolor)', lineHeight: '1.4', fontSize: contentFontSize }}>
+          {content}
+        </p>
+      </div>
     </div>
   );
 }

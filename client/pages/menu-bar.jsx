@@ -94,7 +94,7 @@ export default function MenuBar() {
         </Link>
         
         <Link 
-          href="/supply-projects" 
+          href="/learn-more" 
           style={menuItemStyle}
           onMouseEnter={(e) => {
             e.target.style.background = 'rgba(0,0,0,0.1)';
@@ -105,7 +105,7 @@ export default function MenuBar() {
             e.target.style.borderColor = 'transparent';
           }}
         >
-          Supply New Project
+          About Us
         </Link>
 
         <Button text="Login" link="/login" />
