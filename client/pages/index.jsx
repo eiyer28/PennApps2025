@@ -2,7 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import styles from "@/styles/Home.module.css";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Card from "./card.jsx";
@@ -24,6 +24,11 @@ const geistMono = Geist_Mono({
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [currentRotation, setCurrentRotation] = useState(0);
+  const spinSpeedRef = useRef(0);
+  const animationRef = useRef();
+  
   const cloud1 = useRef(null);
   const cloud2 = useRef(null);
   const cloud3 = useRef(null);
@@ -70,6 +75,38 @@ export default function Home() {
     return () => context.revert();
   }, []);
 
+  useEffect(() => {
+    if (isSpinning) {
+      const animate = () => {
+        // Accelerate until max speed
+        const maxSpeed = 8; // Maximum degrees per frame
+        const acceleration = 0.005; // Reduced from 0.01 to 0.005 for even more gradual acceleration
+        spinSpeedRef.current = Math.min(spinSpeedRef.current + acceleration, maxSpeed);
+        
+        setCurrentRotation(prevRotation => {
+          const newRotation = (prevRotation + spinSpeedRef.current) % 360;
+          return newRotation;
+        });
+        
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    } else {
+      // Reset speed when stopping but keep current rotation
+      spinSpeedRef.current = 0;
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isSpinning]);
+
+  const handleLogoClick = () => {
+    setIsSpinning(!isSpinning);
+  };
+
   return ( 
     <>
       <Head>
@@ -84,7 +121,23 @@ export default function Home() {
         <div className={styles.landingsection} style={{backgroundColor: 'white'}}>
           {/* Text content with higher z-index */}
           <div style={{position: 'relative', zIndex: 3}}>
-            <Image src="/assets/logo-with-white.svg" width={100} height={100} style={{marginBottom: '20px'}}/>
+            <Image 
+              src="/assets/logo-with-white.svg" 
+              width={100} 
+              height={100} 
+              style={{
+                marginBottom: '20px',
+                transform: `rotate(${currentRotation}deg)`,
+                cursor: 'pointer'
+              }}
+              onClick={handleLogoClick}
+            />
+            <style jsx>{`
+              @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+              }
+            `}</style>
             <h1 className={styles.title}>
               Offset your carbon footprint, <br />
               know <span className={styles.highlightText}>where your money is going</span>
@@ -128,8 +181,8 @@ export default function Home() {
             </div>
             <div ref={cloud5} style={{position: 'absolute', top: '60%', left: '-5%'}}>
               <Cloud 
-                width={400} 
-                height={400}
+                width={470} 
+                height={470}
                 type="outline"
               />
             </div>
@@ -149,8 +202,8 @@ export default function Home() {
             </div>
             <div ref={cloud8} style={{position: 'absolute', top: '170%', right: '30%'}}>
               <Cloud 
-                width={400} 
-                height={400}
+                width={500} 
+                height={500}
                 type="solid"
               />
             </div>
@@ -173,13 +226,13 @@ export default function Home() {
               <>
                 Those with the money that can fund sustainable development 
                 are not being connected with the people and places that are 
-                engineering the solutions that can <em>meaningfully affect</em> our 
+                engineering the solutions that can <u>meaningfully affect</u> our 
                 own carbon output and our own development of our cities and 
                 societies. <br></br> <br></br>
 
-                We aim to solve this problem by creating a platform that <em>utilizes
-                blockchain</em> as a regulatory structure to ensure <em>traceability</em>  
-                and <em>transparency</em> of these projects.
+                We aim to solve this problem by creating a platform that utilizes
+                blockchain as a regulatory structure to ensure <u>traceability</u>  
+                and <u>transparency</u> of these projects.
               </>
             }
             showBorder={true}
@@ -191,7 +244,7 @@ export default function Home() {
         </div>
 
         <div className={styles.fullsection} style={{backgroundColor: 'var(--maincolor)'}}>
-          <h2 className={styles.subtitle}>
+          <h2 className={styles.subtitle} style={{color: 'white'}}>
             <span className={styles.highlightText}>Start here, start now</span>
           </h2>
           <div className={styles.cardgrids}>
@@ -201,7 +254,7 @@ export default function Home() {
             title="Buy Carbon Offsets"
             content="Browse verified projects to support and offset your carbon footprint, starting as small as a few cents."
             image="/assets/yzy.jpg"
-            link="/projects"
+            link="/search"
             showBorder={false}
             />
           </div>

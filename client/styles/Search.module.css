@@ -248,7 +248,7 @@
 /* Loading spinner */
 .loader {
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #007cba;
+  border-top: 2px solid var(--maincolor);
   border-radius: 50%;
   width: 16px;
   height: 16px;
