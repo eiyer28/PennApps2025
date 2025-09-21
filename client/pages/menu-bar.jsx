@@ -1,10 +1,46 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from './button.jsx';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function MenuBar() {
   const [isLogoHovered, setIsLogoHovered] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      setIsLoggedIn(false);
+    }
+  }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    try {
+      // Clear user data from localStorage
+      localStorage.removeItem('user');
+      setUser(null);
+      setIsLoggedIn(false);
+      
+      // Redirect to home page
+      router.push('/');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   const menuBarStyle = {
     position: 'fixed',
@@ -108,7 +144,11 @@ export default function MenuBar() {
           About Us
         </Link>
 
-        <Button text="Login" link="/login" />
+        {isLoggedIn ? (
+          <Button text="Logout" onClick={handleLogout} />
+        ) : (
+          <Button text="Login" link="/login" />
+        )}
       </div>
     </div>
   );

@@ -26,7 +26,10 @@ async def create_user(user_data: UserSignup) -> UserResponse:
     
     # Hash the password
     password_hash = hash_password(user_data.password)
-    
+
+    account_address = "user_account_address"  # Replace with actual logic to generate account address
+    private_key = "user_private_key"  # Replace with actual logic to generate private key
+
     # Create user document
     user_doc = {
         "email": user_data.email,
