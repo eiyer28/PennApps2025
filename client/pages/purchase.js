@@ -428,7 +428,11 @@ const Purchase = () => {
           certificateFirstName: certificateFirstName.trim(),
           certificateLastName: certificateLastName.trim(),
           retirementMessage: retirementMessage.trim(),
-          userId: user?.id || user?.email
+          userId: user?.id || user?.email,
+          projectId: projectData?.key || id,
+          projectName: projectData?.name || name,
+          projectUrl: projectData?.url || "N/A",
+          projectRegistry: projectData?.registry || 'N/A'
         })
       });
 
@@ -1145,7 +1149,7 @@ const Purchase = () => {
                   <div className={styles.receiptFooter}>
                     <p className={styles.receiptNote}>
                       <strong>Success!</strong> Your carbon credits have been ordered and are being processed. 
-                      Your retirement certificate will be issued once the order is complete.
+                      You retirement certificate will be issued once the order is complete.
                     </p>
                     {orderData.message && (
                       <p className={styles.receiptMessage}>

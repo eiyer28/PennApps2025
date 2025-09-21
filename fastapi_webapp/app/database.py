@@ -90,3 +90,23 @@ async def get_user_orders(user_id: str):
     except Exception as e:
         print(f"Error fetching user orders: {e}")
         return []
+
+async def get_user_by_id(user_id: str):
+    """Get user details by user ID"""
+    try:
+        database = await get_database()
+        users_collection = database.users
+        
+        # Find user by ID or email (since userId could be either)
+        user = await users_collection.find_one({
+            "$or": [
+                {"_id": user_id},
+                {"email": user_id}
+            ]
+        })
+        
+        return user
+        
+    except Exception as e:
+        print(f"Error fetching user by ID: {e}")
+        return None
