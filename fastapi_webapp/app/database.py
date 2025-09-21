@@ -57,3 +57,48 @@ async def close_mongo_connection():
             print("Disconnected from fallback database")
         else:
             print("Disconnected from MongoDB Atlas")
+
+async def create_indexes():
+    """Create database indexes for optimal performance"""
+    if db.database is None:
+        print("Database not connected, skipping index creation")
+        return
+
+    try:
+        # User collection indexes
+        await db.database.users.create_index("auth0_id", unique=True)
+        await db.database.users.create_index("email", unique=True)
+        await db.database.users.create_index("wallet_address")
+
+        # Project collection indexes
+        await db.database.projects.create_index("project_owner_id")
+        await db.database.projects.create_index("status")
+        await db.database.projects.create_index("project_type")
+        await db.database.projects.create_index("created_at")
+
+        # Transaction collection indexes
+        await db.database.transactions.create_index("user_id")
+        await db.database.transactions.create_index("project_id")
+        await db.database.transactions.create_index("transaction_type")
+        await db.database.transactions.create_index("status")
+        await db.database.transactions.create_index("transaction_hash")
+        await db.database.transactions.create_index("stripe_payment_intent_id")
+        await db.database.transactions.create_index("created_at")
+
+        # Carbon certificate collection indexes
+        await db.database.carbon_certificates.create_index("user_id")
+        await db.database.carbon_certificates.create_index("project_id")
+        await db.database.carbon_certificates.create_index("transaction_id")
+        await db.database.carbon_certificates.create_index("nft_token_id")
+        await db.database.carbon_certificates.create_index("blockchain_address")
+
+        print("Database indexes created successfully")
+
+    except Exception as e:
+        print(f"Error creating indexes: {e}")
+
+async def get_collection(collection_name: str):
+    """Get a specific collection from the database"""
+    if db.database is None:
+        raise Exception("Database not connected")
+    return getattr(db.database, collection_name)
