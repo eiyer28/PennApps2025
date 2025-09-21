@@ -1,7 +1,8 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #7aceb5 0%, #5bb89e 100%);
+  background: var(--maincolor);
   padding: 20px;
+  font-family: Helvetica;
 }
 
 .loadingContainer {
@@ -36,19 +37,23 @@
 }
 
 .backButton {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
   color: white;
   text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 900;
+  border-radius: 4px;
+  transition: all 0.2s ease;
   margin-bottom: 20px;
-  transition: background-color 0.3s ease;
-  backdrop-filter: blur(10px);
 }
 
 .backButton:hover {
-  background: rgba(255, 255, 255, 0.3);
+  color: var(--subcolor);
 }
 
 .title {
@@ -92,13 +97,13 @@
 
 .projectName {
   font-size: 2rem;
-  color: #333;
+  color: var(--textcolor);
   margin: 0 0 10px 0;
   font-weight: 600;
 }
 
 .projectId {
-  color: #666;
+  color: var(--textcolor);
   font-size: 1.1rem;
   margin-bottom: 15px;
 }
@@ -131,7 +136,7 @@
 }
 
 .pricingSection h3 {
-  color: #333;
+  color: var(--textcolor);
   margin: 0 0 15px 0;
   font-size: 1.2rem;
   font-weight: 600;
@@ -169,14 +174,14 @@
 .quantitySection {
   margin: 30px 0;
   padding: 30px;
-  background: white;
+  background: #f9f9f9;
   border-radius: 16px;
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--maincolor);
+  border-left: 4px solid var(--maincolor);
 }
 
 .quantitySection h3 {
-  color: #1e293b;
+  color: var(--textcolor);
   margin: 0 0 25px 0;
   font-size: 1.5rem;
   font-weight: 700;
@@ -202,7 +207,7 @@
 
 .priceAmount {
   font-size: 1.3rem;
-  color: #1e293b;
+  color: var(--textcolor);
   font-weight: 700;
   margin-bottom: 2px;
 }
@@ -340,7 +345,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #333;
+  color: var(--textcolor);
 }
 
 .quantityInput {
@@ -354,7 +359,7 @@
 
 .quantityInput:focus {
   outline: none;
-  border-color: #2196F3;
+  border-color: var(--maincolor);
   box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
@@ -383,12 +388,10 @@
 }
 
 .orderSummary {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  border: 2px solid #2196F3;
-  margin-top: 25px;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
 .summaryRow {
@@ -468,21 +471,19 @@
 
 .purchaseButton {
   flex: 1;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--maincolor);
   color: white;
   border: none;
   padding: 15px 24px;
-  border-radius: 8px;
+  border-radius: 25px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .purchaseButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background: var(--subcolor);
   transform: translateY(-2px);
 }
 
@@ -496,7 +497,7 @@
 .placeholderSection {
   text-align: center;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+  background: white;
   border-radius: 12px;
   margin-bottom: 30px;
 }
@@ -508,7 +509,7 @@
 
 .placeholderSection h3 {
   font-size: 2rem;
-  color: #333;
+  color: var(--textcolor);
   margin-bottom: 20px;
 }
 
@@ -534,7 +535,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 1.1rem;
-  color: #333;
+  color: var(--textcolor);
   transition: transform 0.2s ease;
 }
 
@@ -551,7 +552,7 @@
 }
 
 .debugInfo h4 {
-  color: #333;
+  color: var(--textcolor);
   margin-top: 0;
   margin-bottom: 15px;
 }
@@ -581,7 +582,7 @@
 }
 
 .infoDashboard h3 {
-  color: #333;
+  color: var(--textcolor);
   margin: 0 0 20px 0;
   font-size: 1.4rem;
   font-weight: 600;
@@ -589,15 +590,15 @@
 }
 
 .infoCard {
-  background: #f8f9ff;
+  background: #f9f9f9;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--maincolor);
 }
 
 .infoCard h4 {
-  color: #333;
+  color: var(--textcolor);
   margin: 0 0 15px 0;
   font-size: 1.1rem;
   font-weight: 600;
@@ -626,7 +627,7 @@
 }
 
 .infoItem strong {
-  color: #333;
+  color: var(--textcolor);
   display: block;
   margin-bottom: 3px;
 }
@@ -640,19 +641,18 @@
 
 .viewDetailsButton {
   display: inline-block;
-  background: linear-gradient(135deg, #7aceb5 0%, #5bb89e 100%);
+  background: var(--maincolor);
   color: white;
   text-decoration: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 25px;
   font-weight: 500;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(122, 206, 181, 0.3);
 }
 
 .viewDetailsButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  background: var(--subcolor);
 }
 
 /* Error Card */
@@ -671,7 +671,7 @@
 }
 
 .errorCard h2 {
-  color: #333;
+  color: var(--textcolor);
   margin-bottom: 15px;
 }
 
@@ -683,16 +683,17 @@
 
 .backToSearchButton {
   display: inline-block;
-  background: linear-gradient(135deg, #7aceb5 0%, #5bb89e 100%);
+  background: var(--maincolor);
   color: white;
   text-decoration: none;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 25px;
   transition: transform 0.2s ease;
 }
 
 .backToSearchButton:hover {
   transform: translateY(-2px);
+  background: var(--subcolor);
 }
 
 /* Responsive design */
@@ -784,15 +785,16 @@
 
 /* Certificate Section Styles */
 .certificateSection {
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
+  background: #f9f9f9;
+  border: 2px solid var(--maincolor);
   border-radius: 12px;
   padding: 24px;
   margin-top: 24px;
+  border-left: 4px solid var(--maincolor);
 }
 
 .certificateSection h3 {
-  color: #1e293b;
+  color: var(--textcolor);
   margin-bottom: 8px;
   font-size: 1.4rem;
   display: flex;
@@ -806,7 +808,7 @@
   margin-bottom: 20px;
   padding: 12px;
   background: #e0f2fe;
-  border-left: 4px solid #0891b2;
+  border-left: 4px solid ;
   border-radius: 6px;
   font-style: italic;
 }
@@ -836,7 +838,7 @@
 
 .certificateInput:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--maincolor);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -856,7 +858,7 @@
 
 .messageInput:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--maincolor);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -929,7 +931,7 @@
 
 .orderReadyNote {
   background: #ecfdf5;
-  border: 2px solid #10b981;
+  border: 2px solid var(--maincolor);
   color: #065f46;
   padding: 16px;
   border-radius: 8px;
@@ -987,7 +989,7 @@
 
 .modalHeader h3 {
   margin: 0;
-  color: #1f2937;
+  color: var(--textcolor);
   font-size: 1.25rem;
   font-weight: 600;
 }
@@ -1026,7 +1028,7 @@
 
 .orderSummary h4 {
   margin: 0 0 16px 0;
-  color: #1f2937;
+  color: var(--textcolor);
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -1049,7 +1051,7 @@
   border-bottom: none;
   font-weight: 600;
   font-size: 1.1rem;
-  color: #1f2937;
+  color: var(--textcolor);
 }
 
 .certificateInfo {
@@ -1061,7 +1063,7 @@
 
 .certificateInfo h5 {
   margin: 0 0 12px 0;
-  color: #1f2937;
+  color: var(--textcolor);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -1100,20 +1102,18 @@
 }
 
 .confirmButton {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--maincolor);
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 25px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .confirmButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  background: var(--subcolor);
 }
 
 .confirmButton:disabled {
@@ -1130,7 +1130,7 @@
 .successMessage p {
   margin: 0 0 16px 0;
   font-size: 1.1rem;
-  color: #1f2937;
+  color: var(--textcolor);
 }
 
 .successDetails {
@@ -1276,7 +1276,6 @@
   padding: 12px;
   border-radius: 8px;
   margin: 16px 0;
-  font-size: 0.9rem;
 }
 
 /* Modal Supplier Details */
@@ -1290,7 +1289,7 @@
 
 .supplierDetails h5 {
   margin: 0 0 16px 0;
-  color: #374151;
+  color: var(--textcolor);
   font-size: 1rem;
 }
 
@@ -1483,7 +1482,7 @@
 
 .receiptSection h5 {
   margin: 0 0 12px 0;
-  color: #374151;
+  color: var(--textcolor);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -1502,7 +1501,7 @@
 
 .receiptItem span:last-child {
   font-weight: 500;
-  color: #374151;
+  color: var(--textcolor);
 }
 
 .receiptTotal {
@@ -1535,7 +1534,7 @@
 .orderId {
   font-family: 'Courier New', monospace;
   font-weight: 600 !important;
-  color: #1f2937 !important;
+  color: var(--textcolor) !important;
   background: #f3f4f6;
   padding: 2px 6px;
   border-radius: 4px;
@@ -1550,6 +1549,6 @@
 .receiptMessage {
   margin: 10px 0 0 0;
   font-size: 0.85rem;
-  color: #374151;
+  color: var(--textcolor);
   font-style: italic;
 }

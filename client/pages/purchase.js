@@ -57,16 +57,16 @@ const Purchase = () => {
         
         setAuthChecked(true);
       } else {
-        // No user found, redirect to login
+        // Re-enabled - No user found, redirect to login
         router.push('/login?message=Please log in to access the purchase page.');
         return;
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
+      // Re-enabled - redirect to login on error
       router.push('/login?message=Please log in to access the purchase page.');
       return;
     }
-    setAuthChecked(true);
   }, [router]);
 
   // Fetch project data

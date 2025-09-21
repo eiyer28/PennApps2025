@@ -125,7 +125,7 @@
   color: white;
   text-decoration: none;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 25px;
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.2s ease;
@@ -251,20 +251,19 @@
 }
 
 .expandButton {
-  background: linear-gradient(135deg, #7aceb5 0%, #5bb89e 100%);
-  color: white;
+  background: transparent;
+  font-size: 14px;
+  font-weight: normal;
   border: none;
   outline: none;
   color: var(--maincolor);
   cursor: pointer;
-  margin-top: 15px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(122, 206, 181, 0.3);
+  text-decoration: underline;
+  margin-top: 10px;
 }
 
 .expandButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(122, 206, 181, 0.4);
+  color: var(--subcolor);
 }
 
 .expandButton:active {
