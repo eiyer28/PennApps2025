@@ -52,6 +52,25 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.backButtonInline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: 900;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.backButtonInline:hover {
+  color: var(--subcolor);
+}
+
 .title {
   color: white;
   font-size: 2.5rem;
@@ -90,8 +109,8 @@
 }
 
 .projectName {
-  font-size: 2rem;
-  color: #333;
+  font-size: 1.7rem;
+  color: var(--textcolor);
   margin: 0;
   font-weight: 600;
   flex: 1;
@@ -102,7 +121,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background-color: var(--maincolor);
   color: white;
   text-decoration: none;
   padding: 12px 24px;
@@ -110,38 +129,35 @@
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
   white-space: nowrap;
 }
 
 .purchaseButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
-  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+  background-color: var(--subcolor);
 }
 
 .purchaseButtonDisabled {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  background-color: #8d9792;
   color: white;
   text-decoration: none;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 25px;
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
   white-space: nowrap;
   opacity: 0.8;
 }
 
 .purchaseButtonDisabled:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 14px rgba(108, 117, 125, 0.4);
   text-decoration: none;
   color: white;
+  background-color: #6b7570;
 }
 
 .projectId {
@@ -154,13 +170,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .checkmark {
@@ -212,9 +227,9 @@
 .section {
   margin-bottom: 30px;
   padding: 25px;
-  background: #f8f9ff;
+  background: #f9f9f9;
   border-radius: 12px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--maincolor);
 }
 
 .section h3 {
@@ -236,26 +251,19 @@
 }
 
 .expandButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: transparent;
+  font-size: 14px;
+  font-weight: normal;
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  outline: none;
+  color: var(--maincolor);
   cursor: pointer;
-  margin-top: 15px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  text-decoration: underline;
+  margin-top: 10px;
 }
 
 .expandButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.expandButton:active {
-  transform: translateY(0);
+  color: var(--subcolor);
 }
 
 .detailGrid {
@@ -269,7 +277,6 @@
   padding: 15px 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e0e4e7;
 }
 
 .detailItem strong {
@@ -281,18 +288,18 @@
 .price {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2e7d32;
+  color: var(--maincolor);
 }
 
 .externalLink {
-  color: #667eea;
+  color: var(--maincolor);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .externalLink:hover {
-  color: #764ba2;
+  color: var(--subcolor);
   text-decoration: underline;
 }
 

@@ -107,10 +107,13 @@ const ProjectDetails = () => {
 
       <div className={styles.container} style={{paddingTop: '100px'}}>
         <div className={styles.header}>
-          <Link href="/search" className={styles.backButton}>
-            ← Back to Search
-          </Link>
-          <h1 className={styles.title}>Project Details</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1200px', margin: '0 auto' }}>
+            <Link href="/search" className={styles.backButtonInline}>
+              〈
+            </Link>
+            <h1 className={styles.title} style={{ margin: 0, flex: 1, textAlign: 'center' }}>Project Details</h1>
+            <div style={{ width: '30px' }}></div> {/* Spacer to balance the layout */}
+          </div>
         </div>
 
       <div className={styles.content}>
@@ -125,14 +128,14 @@ const ProjectDetails = () => {
                   href={`/purchase?id=${encodeURIComponent(projectData?.key || id || '')}&name=${encodeURIComponent(projectData?.name || name || 'Unnamed Project')}`}
                   className={styles.purchaseButton}
                 >
-                  🛒 Purchase Credits
+                  Purchase Credits
                 </Link>
               ) : (
                 <Link 
                   href="/login?message=Please log in to purchase carbon credits."
                   className={styles.purchaseButtonDisabled}
                 >
-                  🔒 Login to Purchase
+                  Login to Purchase
                 </Link>
               )}
             </div>
@@ -150,7 +153,7 @@ const ProjectDetails = () => {
           {/* Project Overview */}
           {projectData?.description && (
             <div className={styles.section}>
-              <h3>📋 Project Overview</h3>
+              <h3>Project Overview</h3>
               <div className={styles.descriptionContainer}>
                 <p className={styles.description}>
                   {isDescriptionExpanded 
@@ -163,7 +166,7 @@ const ProjectDetails = () => {
                     className={styles.expandButton}
                     onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                   >
-                    {isDescriptionExpanded ? '📖 Show Less' : '📖 Read More'}
+                    {isDescriptionExpanded ? 'Show Less' : 'Show More'}
                   </button>
                 )}
               </div>
@@ -172,7 +175,7 @@ const ProjectDetails = () => {
 
           {/* Location & Methodology */}
           <div className={styles.section}>
-            <h3>🌍 Location & Methodology</h3>
+            <h3>Location & Methodology</h3>
             <div className={styles.detailGrid}>
               {projectData?.country && (
                 <div className={styles.detailItem}>
@@ -200,7 +203,7 @@ const ProjectDetails = () => {
 
           {/* Trading Information */}
           <div className={styles.section}>
-            <h3>💰 Trading Information</h3>
+            <h3>Trading Information</h3>
             <div className={styles.detailGrid}>
               {projectData?.price !== undefined && (
                 <div className={styles.detailItem}>
@@ -218,18 +221,16 @@ const ProjectDetails = () => {
                   <strong>Total Supply:</strong> {projectData.stats.totalSupply.toLocaleString()} tons CO₂
                 </div>
               )}
-              {projectData?.stats?.totalRetired && (
-                <div className={styles.detailItem}>
-                  <strong>Total Retired:</strong> {projectData.stats.totalRetired.toLocaleString()} tons CO₂
-                </div>
-              )}
+              <div className={styles.detailItem}>
+                <strong>Total Retired:</strong> {(projectData?.stats?.totalRetired || 0).toLocaleString()} tons CO₂
+              </div>
             </div>
           </div>
 
           {/* Project Images */}
           {projectData?.images && projectData.images.length > 0 && (
             <div className={styles.section}>
-              <h3>� Project Images</h3>
+              <h3>Project Images</h3>
               <div className={styles.imageGrid}>
                 {projectData.images.map((image, index) => (
                   <div key={index} className={styles.imageContainer}>
@@ -253,7 +254,7 @@ const ProjectDetails = () => {
           {/* Additional Information */}
           {(projectData?.developer || projectData?.url) && (
             <div className={styles.section}>
-              <h3>ℹ️ Additional Information</h3>
+              <h3>Additional Information</h3>
               <div className={styles.detailGrid}>
                 {projectData?.developer && (
                   <div className={styles.detailItem}>
@@ -277,13 +278,13 @@ const ProjectDetails = () => {
             </div>
           )}
 
-          {/* Debug Information */}
+          {/* Debug Information
           <div className={styles.debugInfo}>
             <h4>Debug Information:</h4>
             <p><strong>Project ID:</strong> {projectData?.projectID || id || 'Not provided'}</p>
             <p><strong>Project Name:</strong> {projectData?.name || (name ? decodeURIComponent(name) : 'Not provided')}</p>
             <p><strong>API Response Keys:</strong> {projectData ? Object.keys(projectData).join(', ') : 'No data'}</p>
-          </div>
+          </div> */}
         </div>
       </div>
       </div>

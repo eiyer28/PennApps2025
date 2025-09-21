@@ -90,7 +90,7 @@ export default function MenuBar() {
             e.target.style.borderColor = 'transparent';
           }}
         >
-            Purchasable Projects
+            Search Projects
         </Link>
         
         <Link 

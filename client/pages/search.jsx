@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import MenuBar from './menu-bar.jsx';
 import styles from '../styles/Search.module.css';
+import projectStyles from '../styles/Project.module.css';
 import Button from './button.jsx';
 
 export default function Search() {
@@ -20,10 +21,23 @@ export default function Search() {
   const [isLoadingCountries, setIsLoadingCountries] = useState(false);
   const [isLoadingMethodologies, setIsLoadingMethodologies] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [user, setUser] = useState(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   const PROJECTS_PER_PAGE = 10;
+
+  // Check user authentication status
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    }
+  }, []);
 
   // Load countries and methodologies on page load
   useEffect(() => {
@@ -388,16 +402,15 @@ export default function Search() {
                 </div>
               )}
               {projects.map((project, index) => (
-                <Link 
-                  key={project.key || project.projectID || index} 
-                  href={`/project?id=${encodeURIComponent(project.key || project.projectID || index)}&name=${encodeURIComponent(project.name || 'Unnamed Project')}`}
-                  className={styles.projectItemLink}
-                >
-                  <div className={styles.projectItem}>
-                    <div className={styles.projectHeader}>
-                      <div className={styles.projectName}>
-                        {project.name || 'Unnamed Project'}
-                      </div>
+                <div key={project.key || project.projectID || index} className={styles.projectItem}>
+                  <div className={styles.projectHeader}>
+                    <Link 
+                      href={`/project?id=${encodeURIComponent(project.key || project.projectID || index)}&name=${encodeURIComponent(project.name || 'Unnamed Project')}`}
+                      className={styles.projectName}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      {project.name || 'Unnamed Project'}
+                    </Link>
                     {project.registry && (
                       <div className={styles.certificationBadge}>
                         <div className={styles.badgeIcon}>
@@ -410,6 +423,28 @@ export default function Search() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Purchase Button */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    {user ? (
+                      <Link 
+                        href={`/purchase?id=${encodeURIComponent(project.key || project.projectID || index)}&name=${encodeURIComponent(project.name || 'Unnamed Project')}`}
+                        className={projectStyles.purchaseButton}
+                        style={{ fontSize: '0.9rem', padding: '8px 16px' }}
+                      >
+                        Purchase Credits
+                      </Link>
+                    ) : (
+                      <Link 
+                        href="/login?message=Please log in to purchase carbon credits."
+                        className={projectStyles.purchaseButtonDisabled}
+                        style={{ fontSize: '0.9rem', padding: '8px 16px' }}
+                      >
+                        Login to Purchase
+                      </Link>
+                    )}
+                  </div>
+
                   {project.country || project.methodologies ? (
                     <div className={styles.projectDetails}>
                       <div className={styles.detailRow}>
@@ -442,7 +477,6 @@ export default function Search() {
                     </div>
                   ) : null}
                 </div>
-                </Link>
               ))}
             </>
           )}
