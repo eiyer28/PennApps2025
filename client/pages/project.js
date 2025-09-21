@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
+import Navbar from '../components/Navbar';
 import styles from '../styles/Project.module.css';
 
 const ProjectDetails = () => {
@@ -10,8 +12,21 @@ const ProjectDetails = () => {
   const [projectData, setProjectData] = useState(null);
   const [error, setError] = useState(null);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [user, setUser] = useState(null);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  // Check user authentication status
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -82,13 +97,21 @@ const ProjectDetails = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Link href="/search" className={styles.backButton}>
-          ← Back to Search
-        </Link>
-        <h1 className={styles.title}>Project Details</h1>
-      </div>
+    <>
+      <Head>
+        <title>Project Details - Carbon Chain</title>
+        <meta name="description" content="View carbon project details" />
+      </Head>
+
+      <Navbar />
+
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <Link href="/search" className={styles.backButton}>
+            ← Back to Search
+          </Link>
+          <h1 className={styles.title}>Project Details</h1>
+        </div>
 
       <div className={styles.content}>
         <div className={styles.projectCard}>
@@ -97,12 +120,21 @@ const ProjectDetails = () => {
               <h2 className={styles.projectName}>
                 {projectData?.name || name ? decodeURIComponent(name) : 'Project Name'}
               </h2>
-              <Link 
-                href={`/purchase?id=${encodeURIComponent(projectData?.key || id || '')}&name=${encodeURIComponent(projectData?.name || name || 'Unnamed Project')}`}
-                className={styles.purchaseButton}
-              >
-                🛒 Purchase Credits
-              </Link>
+              {user ? (
+                <Link 
+                  href={`/purchase?id=${encodeURIComponent(projectData?.key || id || '')}&name=${encodeURIComponent(projectData?.name || name || 'Unnamed Project')}`}
+                  className={styles.purchaseButton}
+                >
+                  🛒 Purchase Credits
+                </Link>
+              ) : (
+                <Link 
+                  href="/login?message=Please log in to purchase carbon credits."
+                  className={styles.purchaseButtonDisabled}
+                >
+                  🔒 Login to Purchase
+                </Link>
+              )}
             </div>
             <div className={styles.projectId}>
               <strong>Project ID:</strong> {projectData?.key || projectData?.projectID || id || 'N/A'}
@@ -254,7 +286,8 @@ const ProjectDetails = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

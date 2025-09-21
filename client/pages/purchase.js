@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
+import Navbar from '../components/Navbar';
 import styles from '../styles/Purchase.module.css';
 
 const Purchase = () => {
@@ -13,8 +15,30 @@ const Purchase = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [priceUpdateCountdown, setPriceUpdateCountdown] = useState(60);
   const [supplyExceeded, setSupplyExceeded] = useState(false);
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  // Check authentication status
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+        setAuthChecked(true);
+      } else {
+        // No user found, redirect to login
+        router.push('/login?message=Please log in to access the purchase page.');
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      router.push('/login?message=Please log in to access the purchase page.');
+      return;
+    }
+    setAuthChecked(true);
+  }, [router]);
 
   // Fetch project data
   const fetchProjectData = async () => {
@@ -40,13 +64,16 @@ const Purchase = () => {
   // Initial data fetch
   useEffect(() => {
     const initialFetch = async () => {
+      // Only fetch if user is authenticated
+      if (!authChecked || !user) return;
+      
       setLoading(true);
       await fetchProjectData();
       setLoading(false);
     };
 
     initialFetch();
-  }, [id]);
+  }, [id, authChecked, user]);
 
   // Price update timer (every 60 seconds)
   useEffect(() => {
@@ -165,6 +192,7 @@ const Purchase = () => {
 
   return (
     <div className={styles.container}>
+      <Navbar />
       <div className={styles.header}>
         <Link href={`/project?id=${encodeURIComponent(id || '')}&name=${encodeURIComponent(name || '')}`} className={styles.backButton}>
           ← Back to Project

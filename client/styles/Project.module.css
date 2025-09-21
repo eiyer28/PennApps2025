@@ -120,6 +120,30 @@
   background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
 }
 
+.purchaseButtonDisabled {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.purchaseButtonDisabled:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(108, 117, 125, 0.4);
+  text-decoration: none;
+  color: white;
+}
+
 .projectId {
   color: #666;
   font-size: 1.1rem;
